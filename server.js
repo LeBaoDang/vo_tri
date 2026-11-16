@@ -4,7 +4,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { URL } = require("url");
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 1234;
 const ROOT = __dirname;
 const UPLOADS = path.join(ROOT, "uploads");
 const MAX_UPLOAD_SIZE = 200 * 1024 * 1024;
@@ -65,9 +65,14 @@ const listUploads = () => fs.readdirSync(UPLOADS)
   .map((name) => {
     const extension = path.extname(name).toLowerCase();
     const kind = MIME_TYPES[extension]?.startsWith("video/") ? "video" : "image";
-    return { url: `/uploads/${encodeURIComponent(name)}`, title: name.replace(/^\d+-[a-f0-9]+-/, "").replace(extension, "").replace(/-/g, " "), kind };
+    return {
+      url: `/uploads/${encodeURIComponent(name)}`,
+      title: "Kỷ niệm của chúng mình",
+      kind,
+      createdAt: fs.statSync(path.join(UPLOADS, name)).mtimeMs,
+    };
   })
-  .sort((a, b) => b.url.localeCompare(a.url));
+  .sort((a, b) => b.createdAt - a.createdAt);
 
 const handleUpload = (request, response) => {
   const contentType = request.headers["content-type"] || "";
@@ -91,7 +96,7 @@ const handleUpload = (request, response) => {
     const uploaded = files.map((file) => {
       const name = safeName(file.filename);
       fs.writeFileSync(path.join(UPLOADS, name), file.content);
-      return { url: `/uploads/${encodeURIComponent(name)}`, title: path.basename(file.filename, path.extname(file.filename)), kind: file.type.startsWith("video/") ? "video" : "image" };
+      return { url: `/uploads/${encodeURIComponent(name)}`, title: "Kỷ niệm của chúng mình", kind: file.type.startsWith("video/") ? "video" : "image" };
     });
     send(response, 201, JSON.stringify(uploaded), "application/json");
   });

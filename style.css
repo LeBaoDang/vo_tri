@@ -67,16 +67,19 @@ h2 span { color: var(--coral); }
 .filter-menu.show { display: grid; }
 .filter-menu button { padding: 9px 10px; color: var(--muted); background: transparent; text-align: left; font-size: 11px; }
 .filter-menu button:hover { color: var(--ink); background: var(--cream); }
-.memory-grid { display: grid; grid-template-columns: 1.08fr .92fr .92fr; grid-auto-rows: 285px; gap: 24px; }
-.memory-card { min-width: 0; }
-.memory-card.tall { grid-row: span 2; }
-.card-image { position: relative; height: calc(100% - 65px); overflow: hidden; background: #ddd; }
-.card-image img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .5s ease; }
+.memory-grid { display: grid; grid-template-columns: 1.08fr .92fr .92fr; grid-auto-rows: 145px; gap: 22px; }
+.memory-card { min-width: 0; grid-row: span 2; transition: transform .25s ease; }
+.memory-card.tall, .memory-card.uploaded-tall { grid-row: span 3; }
+.memory-card.uploaded-wide { grid-column: span 2; }
+.memory-card:hover { transform: translateY(-5px); }
+.card-image { position: relative; height: calc(100% - 65px); overflow: hidden; background: #ddd; border-radius: 14px; box-shadow: 0 12px 24px #5f51351c; }
+.card-image::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #1d171000 55%, #1d17104d 100%); pointer-events: none; }
+.card-image img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
 .card-image video { width: 100%; height: 100%; display: block; object-fit: cover; background: #27302d; }
-.memory-card:hover .card-image img { transform: scale(1.05); }
-.heart { position: absolute; right: 13px; top: 13px; width: 29px; height: 29px; color: var(--ink); background: #fffdf8e8; border-radius: 50%; font-size: 19px; line-height: 1; transition: .2s; }
+.memory-card:hover .card-image img, .memory-card:hover .card-image video { transform: scale(1.06); }
+.heart { position: absolute; z-index: 1; right: 13px; top: 13px; width: 31px; height: 31px; color: var(--ink); background: #fffdf8e8; border-radius: 50%; font-size: 19px; line-height: 1; transition: .2s; }
 .heart.liked { color: var(--coral); }
-.card-info { display: flex; justify-content: space-between; padding-top: 13px; }
+.card-info { display: flex; justify-content: space-between; padding: 13px 3px 2px; }
 .tag { display: inline-block; padding: 4px 8px; border-radius: 2px; font-size: 8px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
 .tag.pink { color: #d66b65; background: #f7d8d1; }.tag.yellow { color: #9c7d16; background: #f4e3a8; }.tag.blue { color: #5a8290; background: #d5e5e8; }.tag.green { color: #688260; background: #d9e7d0; }
 .card-info h3 { margin: 7px 0 0; font-family: var(--serif); font-size: 17px; font-weight: 600; }
@@ -103,11 +106,12 @@ footer b { color: var(--coral); }
 @media (max-width: 760px) {
   .topbar { height: 70px; padding: 0 6%; }.main-nav { display: none; }
   .hero { display: block; padding: 60px 8% 30px; }.hero-art { margin-top: 60px; transform: scale(.88); transform-origin: top center; }
-  .collection { padding: 55px 8%; }.memory-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 230px; gap: 18px; }.memory-card.tall { grid-row: span 1; }
+  .collection { padding: 55px 8%; }.memory-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 145px; gap: 18px; }.memory-card.tall, .memory-card.uploaded-tall { grid-row: span 2; }
+  .memory-card.uploaded-wide { grid-column: span 1; }
   .card-info h3 { font-size: 14px; }.date { font-size: 8px; }.upload-panel { padding: 45px 8%; display: block; }.upload-panel .primary-btn { margin-top: 25px; }
   footer { padding: 25px 8%; gap: 15px; flex-wrap: wrap; }.quote-block { padding: 65px 20px; }
 }
 @media (max-width: 430px) {
-  h1 { font-size: 47px; }.memory-grid { grid-template-columns: 1fr; grid-auto-rows: 280px; }.memory-card.tall { grid-row: span 1; }
+  h1 { font-size: 47px; }.memory-grid { grid-template-columns: 1fr; grid-auto-rows: 175px; }.memory-card.tall, .memory-card.uploaded-tall { grid-row: span 2; }
   .section-heading { align-items: start; flex-direction: column; gap: 20px; }.filter-menu { top: 115px; left: 0; right: auto; }
 }

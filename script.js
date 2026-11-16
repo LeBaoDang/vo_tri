@@ -7,6 +7,7 @@ const toast = document.querySelector("#toast");
 const filterButton = document.querySelector("#filter-btn");
 const filterMenu = document.querySelector("#filter-menu");
 const emptyState = document.querySelector("#empty-state");
+let uploadedCardCount = 0;
 const showToast = (message) => {
   toast.textContent = message;
   toast.classList.add("show");
@@ -24,9 +25,9 @@ const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => (
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
 }[character]));
 
-const addMemoryCard = (url, title, kind = "image") => {
+const addMemoryCard = (url, title, kind = "image", layout = "") => {
   const card = document.createElement("article");
-  card.className = "memory-card";
+  card.className = `memory-card ${layout}`;
   card.dataset.category = "everyday";
   const media = kind === "video"
     ? `<video class="memory-video" src="${escapeHtml(url)}" controls playsinline preload="metadata"></video>`
@@ -34,7 +35,7 @@ const addMemoryCard = (url, title, kind = "image") => {
   const tag = kind === "video" ? "video mới" : "mới thêm";
   card.innerHTML = `
     <div class="card-image">${media}<button class="heart" type="button" aria-label="Yêu thích">♡</button></div>
-    <div class="card-info"><div><span class="tag blue">${tag}</span><h3>${escapeHtml(title)}</h3></div><span class="date">trên server</span></div>
+    <div class="card-info"><div><span class="tag blue">${tag}</span><h3>${escapeHtml(title || "Kỷ niệm của chúng mình")}</h3></div><span class="date">album của mình</span></div>
   `;
   grid.prepend(card);
 };
@@ -44,7 +45,11 @@ const loadServerMemories = async () => {
     const response = await fetch("/api/memories");
     if (!response.ok) throw new Error("Không thể tải album");
     const memories = await response.json();
-    memories.reverse().forEach(({ url, title, kind }) => addMemoryCard(url, title, kind));
+    memories.reverse().forEach(({ url, title, kind }, index) => {
+      const layout = index % 5 === 0 ? "uploaded-tall" : index % 5 === 3 ? "uploaded-wide" : "";
+      uploadedCardCount += 1;
+      addMemoryCard(url, title, kind, layout);
+    });
   } catch (error) {
     showToast("Chưa kết nối được tới server lưu kỷ niệm");
   }
@@ -61,7 +66,11 @@ fileInput.addEventListener("change", async (event) => {
     const response = await fetch("/api/upload", { method: "POST", body: formData });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || "Upload thất bại");
-    result.forEach(({ url, title, kind }) => addMemoryCard(url, title, kind));
+    result.forEach(({ url, title, kind }) => {
+      const layout = uploadedCardCount % 5 === 0 ? "uploaded-tall" : uploadedCardCount % 5 === 3 ? "uploaded-wide" : "";
+      uploadedCardCount += 1;
+      addMemoryCard(url, title, kind, layout);
+    });
     showToast(`${result.length} ảnh/video đã được lưu lên server ✦`);
   } catch (error) {
     showToast(error.message || "Không thể lưu kỷ niệm lên server");

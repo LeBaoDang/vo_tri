@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nhặt Nắng — Album kỷ niệm</title>
-    <meta name="description" content="Một góc nhỏ để cất những khoảnh khắc đáng yêu." />
+    <title>Nhặt Nắng — Kỷ niệm anh &amp; em</title>
+    <meta name="description" content="Góc nhỏ để cất những ngày anh và em thương nhau." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -18,9 +18,9 @@
           <span>nhặt<span>nắng</span></span>
         </a>
         <nav class="main-nav" aria-label="Điều hướng chính">
-          <a class="active" href="#bo-suu-tap">Bộ sưu tập</a>
-          <a href="#nhat-ky">Nhật ký</a>
-          <a href="#ve-chung-minh">Về chúng mình</a>
+          <a class="active" href="#bo-suu-tap">Kỷ niệm của mình</a>
+          <a href="#nhat-ky">Nhật ký yêu</a>
+          <a href="#ve-chung-minh">Về anh &amp; em</a>
         </nav>
         <button class="avatar" type="button" aria-label="Mở tài khoản">NL</button>
       </header>
@@ -28,9 +28,9 @@
       <main>
         <section class="hero">
           <div class="hero-copy">
-            <p class="eyebrow"><span></span> góc nhỏ của những điều to</p>
-            <h1>Cất giữ những<br /><em>ngày thật vui.</em></h1>
-            <p class="hero-text">Một nơi xinh xinh để lưu lại những khoảnh khắc bạn không muốn quên.</p>
+            <p class="eyebrow"><span></span> góc nhỏ của chuyện mình</p>
+            <h1>Cất giữ những<br /><em>ngày mình yêu.</em></h1>
+            <p class="hero-text">Một nơi xinh xinh để anh và em cất lại những khoảnh khắc không muốn quên.</p>
             <div class="hero-actions">
               <button class="primary-btn" id="open-upload" type="button"><span>＋</span> Thêm kỷ niệm</button>
               <a class="text-btn" href="#bo-suu-tap">Xem bộ sưu tập <span>↘</span></a>
@@ -41,11 +41,11 @@
             <div class="tape tape-left"></div>
             <div class="tape tape-right"></div>
             <figure class="hero-photo photo-back">
-              <img src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=700&q=85" alt="Bạn bè cười đùa bên nhau" />
+              <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=700&q=85" alt="Một cặp đôi nắm tay nhau" />
             </figure>
             <figure class="hero-photo photo-front">
-              <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=700&q=85" alt="Nhóm bạn đi dã ngoại" />
-              <figcaption><span>tháng 07, 2024</span><strong>tụi mình &amp; mùa hè</strong></figcaption>
+              <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=700&q=85" alt="Cặp đôi bên nhau trong nắng" />
+              <figcaption><span>tháng 07, 2024</span><strong>mùa hè có anh và em</strong></figcaption>
             </figure>
             <span class="scribble scribble-top">good<br />times</span>
             <span class="scribble scribble-bottom">♡</span>
@@ -55,44 +55,28 @@
         <section class="collection" id="bo-suu-tap">
           <div class="section-heading">
             <div>
-              <p class="eyebrow"><span></span> album của bạn</p>
-              <h2>Mới cập nhật <span>·</span></h2>
+              <p class="eyebrow"><span></span> album của chúng mình</p>
+              <h2>Những ngày có nhau <span>·</span></h2>
             </div>
             <button class="filter-btn" id="filter-btn" type="button">Tất cả kỷ niệm <span>⌄</span></button>
             <div class="filter-menu" id="filter-menu">
               <button type="button" data-filter="all">Tất cả kỷ niệm</button>
-              <button type="button" data-filter="friends">Bạn bè</button>
-              <button type="button" data-filter="travel">Đi chơi</button>
-              <button type="button" data-filter="everyday">Đời thường</button>
+              <button type="button" data-filter="friends">Hẹn hò</button>
+              <button type="button" data-filter="travel">Đi cùng nhau</button>
+              <button type="button" data-filter="everyday">Ngày thường</button>
             </div>
           </div>
 
           <div class="memory-grid" id="memory-grid">
-            <article class="memory-card tall" data-category="friends">
-              <div class="card-image"><img src="https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=700&q=85" alt="Bạn bè nâng ly" /><button class="heart" type="button" aria-label="Yêu thích">♡</button></div>
-              <div class="card-info"><div><span class="tag pink">bạn bè</span><h3>Một tối không vội</h3></div><span class="date">12.08.24</span></div>
-            </article>
-            <article class="memory-card" data-category="travel">
-              <div class="card-image"><img src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=700&q=85" alt="Con đường giữa núi" /><button class="heart" type="button" aria-label="Yêu thích">♡</button></div>
-              <div class="card-info"><div><span class="tag yellow">đi chơi</span><h3>Đi trốn một hôm</h3></div><span class="date">05.08.24</span></div>
-            </article>
-            <article class="memory-card" data-category="everyday">
-              <div class="card-image"><img src="https://images.unsplash.com/photo-1511988617509-a57c8a288659?auto=format&fit=crop&w=700&q=85" alt="Cốc cà phê và quyển sổ" /><button class="heart" type="button" aria-label="Yêu thích">♡</button></div>
-              <div class="card-info"><div><span class="tag blue">đời thường</span><h3>Sáng thứ bảy</h3></div><span class="date">27.07.24</span></div>
-            </article>
-            <article class="memory-card" data-category="friends">
-              <div class="card-image"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=700&q=85" alt="Những người bạn trên bãi cỏ" /><button class="heart" type="button" aria-label="Yêu thích">♡</button></div>
-              <div class="card-info"><div><span class="tag green">bạn bè</span><h3>Chuyện ở bãi cỏ</h3></div><span class="date">19.07.24</span></div>
-            </article>
           </div>
           <div class="empty-state" id="empty-state">Chưa có kỷ niệm nào trong mục này ✦</div>
-          <button class="load-more" type="button">Xem thêm kỷ niệm <span>↓</span></button>
+          <button class="load-more" type="button">Xem thêm chuyện của mình <span>↓</span></button>
         </section>
 
         <section class="quote-block" id="nhat-ky">
           <div class="quote-icon">“</div>
-          <p>“Có những ngày chẳng có gì đặc biệt,<br />nhưng nhìn lại, đó là những ngày mình nhớ nhất.”</p>
-          <span>— nhật ký của những người hay quên</span>
+          <p>“Có những ngày chẳng có gì đặc biệt,<br />nhưng vì có anh/em nên thành ngày đáng nhớ.”</p>
+          <span>— nhật ký của hai đứa mình</span>
         </section>
 
         <section class="upload-panel" id="upload-panel" aria-label="Thêm kỷ niệm mới">
