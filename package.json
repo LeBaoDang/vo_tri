@@ -1,0 +1,7 @@
+{
+  "name": "nhat-nang-memory-album",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  }
+}
