@@ -71,7 +71,8 @@ h2 span { color: var(--coral); }
 .memory-grid { display: grid; grid-template-columns: 1.08fr .92fr .92fr; grid-auto-rows: 145px; gap: 22px; }
 .album-stack { position: relative; min-height: 340px; padding: 18px; cursor: pointer; border-radius: 16px; background: #fffaf2; box-shadow: 0 12px 25px #5f51351c; transition: .25s ease; }
 .stack-actions { display: flex; align-items: center; gap: 8px; }
-.delete-album { min-height: 32px; padding: 6px 9px; color: var(--coral-dark); background: transparent; border: 1px solid #e8b8aa; border-radius: 5px; font-size: 10px; }
+.share-album, .delete-album { min-height: 32px; padding: 6px 9px; color: var(--coral-dark); background: transparent; border: 1px solid #e8b8aa; border-radius: 5px; font-size: 10px; }
+.share-album { color: var(--ink); border-color: var(--line); }
 .album-stack:hover { transform: translateY(-7px) rotate(-1deg); }
 .album-stack::before, .album-stack::after { content: ""; position: absolute; inset: 14px; border-radius: 14px; background: #f0dfc8; transform: rotate(5deg); }
 .album-stack::after { inset: 10px; background: #f7cfc0; transform: rotate(-4deg); }

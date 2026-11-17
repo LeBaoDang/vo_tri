@@ -31,6 +31,7 @@ const lightboxCaption = document.querySelector("#lightbox-caption");
 let pendingFiles = [];
 let pendingCaptions = [];
 let serverMemories = [];
+let serverAlbums = [];
 let lightboxItems = [];
 let lightboxIndex = 0;
 let lightboxPage = 0;
@@ -42,7 +43,8 @@ const quoteSuggestions = {
 };
 
 const populateAlbumPickers = (albums) => {
-  const names = albums.map((album) => album.name);
+  const selectableAlbums = albums.filter((album) => album.name && (!currentUser || album.canManage));
+  const names = selectableAlbums.map((album) => album.name);
   const options = names.map((album) => `<option value="${escapeHtml(album)}">${escapeHtml(album)}</option>`).join("") + '<option value="__new__">＋ Tạo album mới</option>';
   const currentUploadAlbum = albumPicker.value;
   const currentPreviewAlbum = previewAlbumPicker.value;
@@ -139,12 +141,27 @@ const openPicker = () => {
   fileInput.click();
 };
 openUpload.addEventListener("click", () => {
+  if (!requireAuth()) return;
   uploadPanel.scrollIntoView({ behavior: "smooth", block: "center" });
   window.setTimeout(openPicker, 450);
 });
 
+albumPicker.addEventListener("change", () => {
+  if (albumPicker.value === "__new__" && !requireAuth()) {
+    albumPicker.value = albumPicker.options[0]?.value || "__new__";
+    return;
+  }
+  const isNew = albumPicker.value === "__new__";
+  newAlbumInput.hidden = !isNew;
+  if (isNew) newAlbumInput.focus();
+});
+
 previewAlbumPicker.addEventListener("change", () => {
   if (previewAlbumPicker.value !== "__new__") return;
+  if (!requireAuth()) {
+    previewAlbumPicker.value = previewAlbumPicker.options[0]?.value || "__new__";
+    return;
+  }
   const name = window.prompt("Tên album mới là gì?");
   if (!name?.trim()) {
     previewAlbumPicker.value = albumPicker.value === "__new__" ? "Đời thường" : albumPicker.value;
@@ -200,10 +217,11 @@ const renderStacks = () => {
     const stack = document.createElement("article");
     stack.className = "album-stack";
     stack.dataset.category = items[0].category || "everyday";
-    const canDeleteAlbum = currentUser && (currentUser.role === "admin" || currentUser.id === items[0].ownerId);
-    stack.innerHTML = `<div class="stack-cover">${media}</div><div class="stack-info"><div><h3>${escapeHtml(album)}</h3><p>${items.length} khoảnh khắc · bấm để xem</p></div><div class="stack-actions"><span class="stack-count">✦ ${items.length}</span>${canDeleteAlbum ? '<button class="delete-album" type="button">xoá album</button>' : ""}</div></div>`;
+    const albumRecord = serverAlbums.find((candidate) => candidate.name === album);
+    const canDeleteAlbum = currentUser && ((currentUser.role === "admin" && currentUser.username === "admin") || currentUser.id === items[0].ownerId);
+    stack.innerHTML = `<div class="stack-cover">${media}</div><div class="stack-info"><div><h3>${escapeHtml(album)}</h3><p>${items.length} khoảnh khắc · bấm để xem</p></div><div class="stack-actions"><span class="stack-count">✦ ${items.length}</span>${albumRecord ? '<button class="share-album" type="button">chia sẻ</button>' : ""}${canDeleteAlbum ? '<button class="delete-album" type="button">xoá album</button>' : ""}</div></div>`;
     stack.addEventListener("click", (event) => {
-      if (event.target.closest(".delete-album")) return;
+      if (event.target.closest(".delete-album, .share-album")) return;
       openLightbox(items);
     });
     grid.append(stack);
@@ -256,6 +274,7 @@ const bootstrap = async () => {
   currentUser = await response.json();
   renderAuth();
   await loadServerMemories();
+  await openSharedAlbum();
 };
 bootstrap();
 
@@ -263,14 +282,33 @@ const loadAlbums = async () => {
   const response = await fetch("/api/albums");
   if (!response.ok) throw new Error("Không thể tải danh sách album");
   const albums = await response.json();
+  serverAlbums = albums;
   populateAlbumPickers(albums);
 };
 
-albumPicker.addEventListener("change", () => {
-  const isNew = albumPicker.value === "__new__";
-  newAlbumInput.hidden = !isNew;
-  if (isNew) newAlbumInput.focus();
-});
+const shareAlbum = async (album) => {
+  const link = `${window.location.origin}/?share=${encodeURIComponent(album.shareToken)}`;
+  try {
+    await navigator.clipboard.writeText(link);
+    showToast("Đã copy link chia sẻ album ✦");
+  } catch {
+    window.prompt("Copy link chia sẻ album:", link);
+  }
+};
+
+const openSharedAlbum = async () => {
+  const token = new URLSearchParams(window.location.search).get("share");
+  if (!token) return;
+  try {
+    const response = await fetch(`/api/shared/${encodeURIComponent(token)}`);
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Không thể mở album chia sẻ");
+    openLightbox(result.memories);
+    showToast(`Đang xem album "${result.album.name}"`);
+  } catch (error) {
+    showToast(error.message);
+  }
+};
 
 fileInput.addEventListener("change", async (event) => {
   const files = [...event.target.files].filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/"));
@@ -356,6 +394,14 @@ document.querySelector("#preview-save").addEventListener("click", async () => {
 });
 
 document.addEventListener("click", (event) => {
+  const shareButton = event.target.closest(".share-album");
+  if (shareButton) {
+    const stack = shareButton.closest(".album-stack");
+    const albumName = stack.querySelector("h3").textContent;
+    const album = serverAlbums.find((candidate) => candidate.name === albumName);
+    if (album) shareAlbum(album);
+    return;
+  }
   const deleteAlbum = event.target.closest(".delete-album");
   if (deleteAlbum) {
     const stack = deleteAlbum.closest(".album-stack");

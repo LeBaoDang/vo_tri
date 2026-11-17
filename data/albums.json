@@ -2,26 +2,25 @@
   {
     "id": "friends",
     "name": "Bạn bè",
-    "ownerId": "admin"
+    "ownerId": "admin",
+    "shareToken": "fhg-6SdIYbpfMeQK0-5lYqx4"
   },
   {
     "id": "travel",
     "name": "Lang thang",
-    "ownerId": "admin"
+    "ownerId": "admin",
+    "shareToken": "554XqhFLNB1Dz5ifMxGDa6uF"
   },
   {
     "id": "everyday",
     "name": "Đời thường",
-    "ownerId": "admin"
+    "ownerId": "admin",
+    "shareToken": "x3qbbh55aBTzYiaG5U4i87JQ"
   },
   {
     "id": "581449ce-c6ce-4814-abe5-d881dafc1994",
     "name": "lang thang 123",
-    "ownerId": "1d49b6dc-8553-4524-97fe-ef34261ac647"
-  },
-  {
-    "id": "d8ced038-6d97-4b9d-9a8a-6a2ebe31fb45",
-    "name": "undefined",
-    "ownerId": "admin"
+    "ownerId": "1d49b6dc-8553-4524-97fe-ef34261ac647",
+    "shareToken": "rQRnYMdE5uCxEjIku8i0jGt8"
   }
 ]

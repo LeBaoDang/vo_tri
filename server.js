@@ -43,7 +43,19 @@ const readUsers = () => {
 };
 const writeUsers = (users) => fs.writeFileSync(AUTH_DB, JSON.stringify(users, null, 2));
 const readAlbums = () => {
-  try { return JSON.parse(fs.readFileSync(ALBUM_DB, "utf8")); } catch { return []; }
+  try {
+    const storedAlbums = JSON.parse(fs.readFileSync(ALBUM_DB, "utf8"));
+    const albums = storedAlbums.filter((album) => typeof album.name === "string" && album.name.trim() && album.name !== "undefined");
+    let changed = albums.length !== storedAlbums.length;
+    albums.forEach((album) => {
+      if (!album.shareToken) {
+        album.shareToken = crypto.randomBytes(18).toString("base64url");
+        changed = true;
+      }
+    });
+    if (changed) writeAlbums(albums);
+    return albums;
+  } catch { return []; }
 };
 const writeAlbums = (albums) => fs.writeFileSync(ALBUM_DB, JSON.stringify(albums, null, 2));
 if (!fs.existsSync(AUTH_DB)) {
@@ -74,7 +86,7 @@ const requireUser = (request, response) => {
   if (!user) send(response, 401, JSON.stringify({ error: "Vui lòng đăng nhập để thực hiện thao tác" }), "application/json");
   return user;
 };
-const canManage = (user, ownerId) => Boolean(user && (user.role === "admin" || user.id === ownerId));
+const canManage = (user, ownerId) => Boolean(user && ((user.role === "admin" && user.username === "admin") || user.id === ownerId));
 
 const safeName = (name) => {
   const extension = path.extname(name).toLowerCase();
@@ -237,6 +249,7 @@ const listUploads = () => fs.readdirSync(UPLOADS)
       title: "Kỷ niệm lang thang",
       kind,
       album: metadata.album || fallbackAlbums[metadata.category] || "Đời thường",
+      albumId: metadata.albumId,
       ownerId,
       ownerUsername: owner?.username || "admin",
       category: metadata.category || "everyday",
@@ -336,7 +349,7 @@ const handleAlbumDelete = (request, response, pathname) => {
   const albums = readAlbums();
   const album = albums.find((candidate) => candidate.id === albumId);
   if (!album) return send(response, 404, JSON.stringify({ error: "Không tìm thấy album" }), "application/json");
-  if (!canManage(user, album.ownerId)) return send(response, 403, JSON.stringify({ error: "Album này không phải của bạn, bạn không có quyền thao tác!" }), "application/json");
+  if (!canManage(user, album.ownerId)) return send(response, 403, JSON.stringify({ error: "Bạn không có quyền xóa album này!" }), "application/json");
   const metadata = readMetadata();
   let deleted = 0;
   fs.readdirSync(UPLOADS).filter((name) => !name.startsWith(".")).forEach((name) => {
@@ -352,6 +365,14 @@ const handleAlbumDelete = (request, response, pathname) => {
   return send(response, 200, JSON.stringify({ deleted }), "application/json");
 };
 
+const handleSharedAlbum = (request, response, pathname) => {
+  const token = decodeURIComponent(pathname.slice("/api/shared/".length));
+  const album = readAlbums().find((candidate) => candidate.shareToken === token);
+  if (!album) return send(response, 404, JSON.stringify({ error: "Link chia sẻ không tồn tại hoặc đã bị xóa" }), "application/json");
+  const memories = listUploads().filter((memory) => memory.albumId === album.id || (!memory.albumId && memory.album === album.name));
+  return send(response, 200, JSON.stringify({ album: { id: album.id, name: album.name }, memories }), "application/json");
+};
+
 const server = http.createServer(async (request, response) => {
   const requestUrl = new URL(request.url, `http://${request.headers.host || "localhost"}`);
   if (requestUrl.pathname === "/api/me" || requestUrl.pathname === "/api/auth/login" || requestUrl.pathname === "/api/auth/register" || requestUrl.pathname === "/api/auth/logout") {
@@ -364,6 +385,9 @@ const server = http.createServer(async (request, response) => {
     const user = getUser(request);
     const albums = readAlbums().map((album) => ({ ...album, ownerUsername: readUsers().find((candidate) => candidate.id === album.ownerId)?.username || "admin", canManage: canManage(user, album.ownerId) }));
     return send(response, 200, JSON.stringify(albums), "application/json");
+  }
+  if (request.method === "GET" && requestUrl.pathname.startsWith("/api/shared/")) {
+    return handleSharedAlbum(request, response, requestUrl.pathname);
   }
   if (request.method === "POST" && requestUrl.pathname === "/api/albums") {
     const user = requireUser(request, response);
