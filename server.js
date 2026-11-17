@@ -23,10 +23,14 @@ const MIME_TYPES = {
   ".png": "image/png",
   ".gif": "image/gif",
   ".webp": "image/webp",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
   ".mp4": "video/mp4",
   ".mov": "video/quicktime",
   ".webm": "video/webm",
   ".ogg": "video/ogg",
+  ".m4v": "video/mp4",
+  ".3gp": "video/3gpp",
 };
 
 fs.mkdirSync(UPLOADS, { recursive: true });

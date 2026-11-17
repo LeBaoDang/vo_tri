@@ -142,8 +142,8 @@ const openPicker = () => {
 };
 openUpload.addEventListener("click", () => {
   if (!requireAuth()) return;
+  openPicker();
   uploadPanel.scrollIntoView({ behavior: "smooth", block: "center" });
-  window.setTimeout(openPicker, 450);
 });
 
 albumPicker.addEventListener("change", () => {
