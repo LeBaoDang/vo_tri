@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nhặt Nắng — Kỷ niệm anh &amp; em</title>
-    <meta name="description" content="Góc nhỏ để cất những ngày anh và em thương nhau." />
+    <title>Nhặt Nắng — Kỷ niệm lang thang</title>
+    <meta name="description" content="Góc nhỏ để lưu những ngày lang thang cùng mình và bạn bè." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -18,19 +18,22 @@
           <span>nhặt<span>nắng</span></span>
         </a>
         <nav class="main-nav" aria-label="Điều hướng chính">
-          <a class="active" href="#bo-suu-tap">Kỷ niệm của mình</a>
-          <a href="#nhat-ky">Nhật ký yêu</a>
-          <a href="#ve-chung-minh">Về anh &amp; em</a>
+          <a class="active" href="#bo-suu-tap">Bộ sưu tập</a>
+          <a href="#nhat-ky">Nhật ký lang thang</a>
+          <a href="#ve-chung-minh">Về tụi mình</a>
         </nav>
-        <button class="avatar" type="button" aria-label="Mở tài khoản">NL</button>
+        <div class="auth-area" id="auth-area">
+          <button class="auth-link" id="login-open" type="button">Đăng nhập</button>
+          <button class="primary-btn auth-register" id="register-open" type="button">Đăng ký</button>
+        </div>
       </header>
 
       <main>
         <section class="hero">
           <div class="hero-copy">
-            <p class="eyebrow"><span></span> góc nhỏ của chuyện mình</p>
-            <h1>Cất giữ những<br /><em>ngày mình yêu.</em></h1>
-            <p class="hero-text">Một nơi xinh xinh để anh và em cất lại những khoảnh khắc không muốn quên.</p>
+            <p class="eyebrow"><span></span> góc nhỏ của những chuyến đi</p>
+            <h1>Cất giữ những<br /><em>ngày lang thang.</em></h1>
+            <p class="hero-text">Một nơi xinh xinh để mình và bạn bè lưu lại những khoảnh khắc đã cùng nhau đi qua.</p>
             <div class="hero-actions">
               <button class="primary-btn" id="open-upload" type="button"><span>＋</span> Thêm kỷ niệm</button>
               <a class="text-btn" href="#bo-suu-tap">Xem bộ sưu tập <span>↘</span></a>
@@ -41,11 +44,11 @@
             <div class="tape tape-left"></div>
             <div class="tape tape-right"></div>
             <figure class="hero-photo photo-back">
-              <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=700&q=85" alt="Một cặp đôi nắm tay nhau" />
+              <img src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=700&q=85" alt="Nhóm bạn cười đùa bên nhau" />
             </figure>
             <figure class="hero-photo photo-front">
-              <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=700&q=85" alt="Cặp đôi bên nhau trong nắng" />
-              <figcaption><span>tháng 07, 2024</span><strong>mùa hè có anh và em</strong></figcaption>
+              <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=700&q=85" alt="Bạn bè đi dã ngoại" />
+              <figcaption><span>tháng 07, 2024</span><strong>tụi mình &amp; mùa hè</strong></figcaption>
             </figure>
             <span class="scribble scribble-top">good<br />times</span>
             <span class="scribble scribble-bottom">♡</span>
@@ -55,28 +58,71 @@
         <section class="collection" id="bo-suu-tap">
           <div class="section-heading">
             <div>
-              <p class="eyebrow"><span></span> album của chúng mình</p>
-              <h2>Những ngày có nhau <span>·</span></h2>
+              <p class="eyebrow"><span></span> album của tụi mình</p>
+              <h2>Những ngày đã đi qua <span>·</span></h2>
             </div>
             <button class="filter-btn" id="filter-btn" type="button">Tất cả kỷ niệm <span>⌄</span></button>
             <div class="filter-menu" id="filter-menu">
               <button type="button" data-filter="all">Tất cả kỷ niệm</button>
-              <button type="button" data-filter="friends">Hẹn hò</button>
-              <button type="button" data-filter="travel">Đi cùng nhau</button>
-              <button type="button" data-filter="everyday">Ngày thường</button>
+              <button type="button" data-filter="friends">Bạn bè</button>
+              <button type="button" data-filter="travel">Lang thang</button>
+              <button type="button" data-filter="everyday">Đời thường</button>
             </div>
           </div>
 
           <div class="memory-grid" id="memory-grid">
+            <article class="memory-card tall" data-category="friends">
+              <div class="card-image"><img src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=700&q=85" alt="Nhóm bạn cười đùa bên nhau" /><button class="heart" type="button" aria-label="Yêu thích">♡</button></div>
+              <div class="card-info"><div><span class="tag pink">bạn bè</span><h3>Một tối không vội</h3><p class="memory-quote">Đi cùng nhau thì đường xa cũng thành chuyện vui.</p><button class="edit-quote" type="button">✎ sửa câu</button></div><span class="date">12.08.24</span></div>
+            </article>
+            <article class="memory-card" data-category="travel">
+              <div class="card-image"><img src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=700&q=85" alt="Con đường trong chuyến đi" /><button class="heart" type="button" aria-label="Yêu thích">♡</button></div>
+              <div class="card-info"><div><span class="tag yellow">lang thang</span><h3>Đi trốn một hôm</h3><p class="memory-quote">Cứ đi rồi sẽ có một ngày để nhớ.</p><button class="edit-quote" type="button">✎ sửa câu</button></div><span class="date">05.08.24</span></div>
+            </article>
+            <article class="memory-card" data-category="everyday">
+              <div class="card-image"><img src="https://images.unsplash.com/photo-1511988617509-a57c8a288659?auto=format&fit=crop&w=700&q=85" alt="Một ngày vui cùng bạn bè" /><button class="heart" type="button" aria-label="Yêu thích">♡</button></div>
+              <div class="card-info"><div><span class="tag blue">đời thường</span><h3>Sáng thứ bảy</h3><p class="memory-quote">Ngày bình thường cũng đáng để giữ lại.</p><button class="edit-quote" type="button">✎ sửa câu</button></div><span class="date">27.07.24</span></div>
+            </article>
+            <article class="memory-card" data-category="friends">
+              <div class="card-image"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=700&q=85" alt="Bạn bè đi dã ngoại" /><button class="heart" type="button" aria-label="Yêu thích">♡</button></div>
+              <div class="card-info"><div><span class="tag green">bạn bè</span><h3>Chuyện ở bãi cỏ</h3><p class="memory-quote">Có hội bạn, bãi cỏ cũng thành điểm đến.</p><button class="edit-quote" type="button">✎ sửa câu</button></div><span class="date">19.07.24</span></div>
+            </article>
           </div>
           <div class="empty-state" id="empty-state">Chưa có kỷ niệm nào trong mục này ✦</div>
           <button class="load-more" type="button">Xem thêm chuyện của mình <span>↓</span></button>
         </section>
 
-        <section class="quote-block" id="nhat-ky">
+        <section class="journal" id="nhat-ky">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow"><span></span> nhật ký lang thang</p>
+              <h2>Nhặt vài dòng vui <span>·</span></h2>
+            </div>
+            <button class="text-btn journal-add" id="new-post" type="button">Viết một dòng <span>＋</span></button>
+          </div>
+          <div class="journal-grid" id="journal-grid">
+            <article class="journal-card yellow-note">
+              <span class="post-date">17.11.24 · 09:42</span>
+              <p>Không cần đi thật xa, chỉ cần đi cùng đúng hội là ngày thường cũng hóa chuyến phiêu lưu.</p>
+              <span class="post-sign">— ghi vội bên lề đường</span>
+            </article>
+            <article class="journal-card pink-note">
+              <span class="post-date">03.11.24 · 18:20</span>
+              <p>Có những tấm ảnh không đẹp nhất, nhưng lại giữ đúng tiếng cười của ngày hôm đó.</p>
+              <span class="post-sign">— tụi mình của những ngày xưa</span>
+            </article>
+            <article class="journal-card green-note">
+              <span class="post-date">28.10.24 · 22:08</span>
+              <p>Đi để có chuyện kể, chụp để sau này còn có cớ ngồi lại với nhau.</p>
+              <span class="post-sign">— lời của một đứa hay nhớ</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="quote-block">
           <div class="quote-icon">“</div>
-          <p>“Có những ngày chẳng có gì đặc biệt,<br />nhưng vì có anh/em nên thành ngày đáng nhớ.”</p>
-          <span>— nhật ký của hai đứa mình</span>
+          <p>“Có những ngày chẳng có gì đặc biệt,<br />nhưng nhìn lại, đó là những ngày mình nhớ nhất.”</p>
+          <span>— nhật ký của những người hay quên</span>
         </section>
 
         <section class="upload-panel" id="upload-panel" aria-label="Thêm kỷ niệm mới">
@@ -84,9 +130,19 @@
             <p class="eyebrow"><span></span> lưu lại ngay</p>
             <h2>Một khoảnh khắc,<br /><em>một câu chuyện.</em></h2>
           </div>
+          <label class="category-picker" for="memory-album">
+            <span>Chọn album</span>
+            <select id="memory-album">
+              <option value="Bạn bè">Bạn bè</option>
+              <option value="Lang thang">Lang thang</option>
+              <option value="Đời thường" selected>Đời thường</option>
+              <option value="__new__">＋ Tạo album mới</option>
+            </select>
+          </label>
+          <input class="new-album-input" id="new-album-name" type="text" maxlength="60" placeholder="Tên album mới..." hidden />
           <button class="primary-btn light" id="upload-button" type="button">Chọn ảnh hoặc video <span>↗</span></button>
           <input id="file-input" type="file" accept="image/*,video/*" multiple hidden />
-          <p class="upload-note">Ảnh và video được lưu trên trình duyệt của bạn · riêng tư &amp; an toàn</p>
+          <p class="upload-note">Đăng ảnh hoặc video lên album · lưu lại những ngày thật vui</p>
         </section>
       </main>
 
@@ -95,6 +151,47 @@
         <span>làm bằng nhiều yêu thương <b>♥</b></span>
         <span>made for the soft-hearted</span>
       </footer>
+    </div>
+    <div class="preview-modal" id="preview-modal" aria-hidden="true">
+      <div class="preview-dialog">
+        <button class="modal-close" id="preview-close" type="button" aria-label="Đóng">×</button>
+        <p class="eyebrow"><span></span> xem trước</p>
+        <h2>Chọn lại những khoảnh khắc <span>muốn giữ</span></h2>
+        <label class="preview-album-picker" for="preview-album">
+          <span>Chèn vào album</span>
+          <select id="preview-album">
+            <option value="Bạn bè">Bạn bè</option>
+            <option value="Lang thang">Lang thang</option>
+            <option value="Đời thường" selected>Đời thường</option>
+            <option value="__new__">＋ Tạo album mới</option>
+          </select>
+        </label>
+        <div class="preview-grid" id="preview-grid"></div>
+        <div class="preview-actions">
+          <button class="text-btn" id="preview-cancel" type="button">Bỏ qua</button>
+          <button class="primary-btn" id="preview-save" type="button">Lưu vào album <span>↗</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+      <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Đóng">×</button>
+      <button class="lightbox-arrow prev" id="lightbox-prev" type="button" aria-label="Ảnh trước">‹</button>
+      <div class="lightbox-content" id="lightbox-content"></div>
+      <button class="lightbox-arrow next" id="lightbox-next" type="button" aria-label="Ảnh tiếp">›</button>
+      <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+    <div class="auth-modal" id="auth-modal" aria-hidden="true">
+      <form class="auth-dialog" id="auth-form">
+        <button class="modal-close" id="auth-close" type="button" aria-label="Đóng">×</button>
+        <p class="eyebrow"><span></span> góc nhỏ của tụi mình</p>
+        <h2 id="auth-title">Đăng nhập</h2>
+        <input id="auth-username" type="text" placeholder="Username" autocomplete="username" required />
+        <input id="auth-password" type="password" placeholder="Password" autocomplete="current-password" required />
+        <input id="auth-confirm" type="password" placeholder="Xác nhận password" autocomplete="new-password" hidden />
+        <button class="primary-btn" id="auth-submit" type="submit">Đăng nhập</button>
+        <button class="auth-switch" id="auth-switch" type="button">Chưa có tài khoản? Đăng ký</button>
+        <p class="auth-error" id="auth-error"></p>
+      </form>
     </div>
     <div class="toast" id="toast" role="status"></div>
     <script src="script.js"></script>

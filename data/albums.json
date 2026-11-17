@@ -1,0 +1,27 @@
+[
+  {
+    "id": "friends",
+    "name": "Bạn bè",
+    "ownerId": "admin"
+  },
+  {
+    "id": "travel",
+    "name": "Lang thang",
+    "ownerId": "admin"
+  },
+  {
+    "id": "everyday",
+    "name": "Đời thường",
+    "ownerId": "admin"
+  },
+  {
+    "id": "581449ce-c6ce-4814-abe5-d881dafc1994",
+    "name": "lang thang 123",
+    "ownerId": "1d49b6dc-8553-4524-97fe-ef34261ac647"
+  },
+  {
+    "id": "d8ced038-6d97-4b9d-9a8a-6a2ebe31fb45",
+    "name": "undefined",
+    "ownerId": "admin"
+  }
+]

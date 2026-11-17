@@ -1,0 +1,26 @@
+[
+  {
+    "id": "admin",
+    "username": "admin",
+    "role": "admin",
+    "salt": "6d029aa1abc9a50cc53c056bebebe502",
+    "hash": "b0652c38b192bc79ab9d209f2cac04f3d80210b5d7c75acc74e05047dce1b9875b0630bc992258fb29da6f75b82fa0cd50eae439350117586b997ae69bcea7b8",
+    "createdAt": "2026-11-17T15:06:14.936Z"
+  },
+  {
+    "id": "1d49b6dc-8553-4524-97fe-ef34261ac647",
+    "username": "dang",
+    "role": "user",
+    "salt": "b2e4a54d34466c65124c72bbe100e9fb",
+    "hash": "6dc809113619e8dfeab32239bf25079ecfd2e9bf1da41b8ceec039206cdf037ab35f74f1be40f75d8041782ba26ee6193e771094c453e5923fd7cfd5b5becf41",
+    "createdAt": "2026-11-17T15:09:01.363Z"
+  },
+  {
+    "id": "2405a702-b0df-4f59-8ed0-8ecc35602443",
+    "username": "dang123",
+    "role": "user",
+    "salt": "146e271aaaa8dd6d9e35d9ea86bbd239",
+    "hash": "025154e73cc4b45b21920c11a12b8a2de882e5d04083008d003f7be2912623bfe44b9e9d1fba0cf69e0f79268728d0afa2b7da54fca4186d5bda7b4fda72651a",
+    "createdAt": "2026-11-17T15:10:43.711Z"
+  }
+]
