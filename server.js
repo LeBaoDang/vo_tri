@@ -7,12 +7,13 @@ const { URL } = require("url");
 const PORT = Number(process.env.PORT) || 1234;
 const ROOT = __dirname;
 const UPLOADS = path.join(ROOT, "uploads");
+const VIDEO_UPLOADS = path.join(UPLOADS, "videos");
+const THUMBNAILS = path.join(UPLOADS, "thumbnails");
 const METADATA = path.join(UPLOADS, ".metadata.json");
 const DATA_DIR = path.join(ROOT, "data");
 const JOURNAL_DB = path.join(DATA_DIR, "journal.json");
 const AUTH_DB = path.join(DATA_DIR, "users.json");
 const ALBUM_DB = path.join(DATA_DIR, "albums.json");
-const MAX_UPLOAD_SIZE = 200 * 1024 * 1024;
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -34,6 +35,8 @@ const MIME_TYPES = {
 };
 
 fs.mkdirSync(UPLOADS, { recursive: true });
+fs.mkdirSync(VIDEO_UPLOADS, { recursive: true });
+fs.mkdirSync(THUMBNAILS, { recursive: true });
 fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(JOURNAL_DB)) fs.writeFileSync(JOURNAL_DB, "[]");
 const sessions = new Map();
@@ -136,6 +139,11 @@ const readMetadata = () => {
     return {};
   }
 };
+const mediaFiles = (directory = UPLOADS, prefix = "") => fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+  if (entry.name.startsWith(".") || (directory === UPLOADS && entry.name === "thumbnails")) return [];
+  const relative = prefix ? path.join(prefix, entry.name) : entry.name;
+  return entry.isDirectory() ? mediaFiles(path.join(directory, entry.name), relative) : [relative];
+});
 
 const readJournal = () => {
   try {
@@ -238,8 +246,7 @@ const handleJournal = async (request, response, pathname) => {
   return send(response, 405, "Method Not Allowed");
 };
 
-const listUploads = () => fs.readdirSync(UPLOADS)
-  .filter((name) => !name.startsWith("."))
+const listUploads = () => mediaFiles()
   .map((name) => {
     const extension = path.extname(name).toLowerCase();
     const kind = MIME_TYPES[extension]?.startsWith("video/") ? "video" : "image";
@@ -249,7 +256,8 @@ const listUploads = () => fs.readdirSync(UPLOADS)
     const owner = readUsers().find((user) => user.id === ownerId);
     return {
       id: name,
-      url: `/uploads/${encodeURIComponent(name)}`,
+      url: `/uploads/${name.split(path.sep).map(encodeURIComponent).join("/")}`,
+      thumbnailUrl: metadata.thumbnailUrl || "",
       title: "Kỷ niệm lang thang",
       kind,
       album: metadata.album || fallbackAlbums[metadata.category] || "Đời thường",
@@ -274,16 +282,12 @@ const handleUpload = (request, response) => {
   let total = 0;
   request.on("data", (chunk) => {
     total += chunk.length;
-    if (total > MAX_UPLOAD_SIZE) {
-      request.destroy();
-      return;
-    }
     chunks.push(chunk);
   });
   request.on("end", () => {
-    if (total > MAX_UPLOAD_SIZE) return send(response, 413, JSON.stringify({ error: "File vượt quá 200MB" }), "application/json");
     const parts = parseMultipart(Buffer.concat(chunks), boundary);
-    const files = parts.filter((part) => part.filename && Object.prototype.hasOwnProperty.call(MIME_TYPES, path.extname(part.filename).toLowerCase()));
+    const files = parts.filter((part) => part.field === "memories" && part.filename && Object.prototype.hasOwnProperty.call(MIME_TYPES, path.extname(part.filename).toLowerCase()));
+    const thumbnailParts = parts.filter((part) => part.field === "thumbnails" && part.filename);
     const category = ["friends", "travel", "everyday"].includes(parts.find((part) => part.field === "category")?.value) ? parts.find((part) => part.field === "category").value : "everyday";
     const album = String(parts.find((part) => part.field === "album")?.value || "").trim().slice(0, 60) || "Đời thường";
     let quotes = [];
@@ -301,10 +305,18 @@ const handleUpload = (request, response) => {
     const metadata = readMetadata();
     const uploaded = files.map((file, index) => {
       const name = safeName(file.filename);
-      fs.writeFileSync(path.join(UPLOADS, name), file.content);
+      const isVideo = file.type.startsWith("video/") || MIME_TYPES[path.extname(file.filename).toLowerCase()]?.startsWith("video/");
+      const storagePath = isVideo ? path.join("videos", name) : name;
+      fs.writeFileSync(path.join(UPLOADS, storagePath), file.content);
       const quote = String(quotes[index] || "").trim().slice(0, 240);
-      metadata[name] = { category, album: albumRecord.name, albumId: albumRecord.id, ownerId: user.id, quote };
-      return { id: name, url: `/uploads/${encodeURIComponent(name)}`, title: "Kỷ niệm lang thang", album: albumRecord.name, albumId: albumRecord.id, ownerId: user.id, canManage: true, category, quote, kind: file.type.startsWith("video/") ? "video" : "image" };
+      let thumbnailUrl = "";
+      if (isVideo && thumbnailParts[index]?.content.length) {
+        const thumbnailName = `${path.basename(name, path.extname(name))}.jpg`;
+        fs.writeFileSync(path.join(THUMBNAILS, thumbnailName), thumbnailParts[index].content);
+        thumbnailUrl = `/uploads/thumbnails/${encodeURIComponent(thumbnailName)}`;
+      }
+      metadata[storagePath] = { category, album: albumRecord.name, albumId: albumRecord.id, ownerId: user.id, quote, thumbnailUrl };
+      return { id: storagePath, url: isVideo ? `/uploads/videos/${encodeURIComponent(name)}` : `/uploads/${encodeURIComponent(name)}`, thumbnailUrl, title: "Kỷ niệm lang thang", album: albumRecord.name, albumId: albumRecord.id, ownerId: user.id, canManage: true, category, quote, kind: isVideo ? "video" : "image" };
     });
     fs.writeFileSync(METADATA, JSON.stringify(metadata, null, 2));
     send(response, 201, JSON.stringify(uploaded), "application/json");
@@ -322,6 +334,10 @@ const handleMemoryMutation = async (request, response, pathname) => {
   if (!canManage(user, metadata[name]?.ownerId || "admin")) return send(response, 403, JSON.stringify({ error: "Ảnh/Album này không phải của bạn, bạn không có quyền thao tác!" }), "application/json");
   if (request.method === "DELETE") {
     fs.unlinkSync(safePath);
+    if (metadata[name]?.thumbnailUrl) {
+      const thumbnailPath = path.join(ROOT, metadata[name].thumbnailUrl.replace(/^\/+/, ""));
+      if (fs.existsSync(thumbnailPath)) fs.unlinkSync(thumbnailPath);
+    }
     delete metadata[name];
     fs.writeFileSync(METADATA, JSON.stringify(metadata, null, 2));
     return send(response, 204, "");
@@ -356,10 +372,15 @@ const handleAlbumDelete = (request, response, pathname) => {
   if (!canManage(user, album.ownerId)) return send(response, 403, JSON.stringify({ error: "Bạn không có quyền xóa album này!" }), "application/json");
   const metadata = readMetadata();
   let deleted = 0;
-  fs.readdirSync(UPLOADS).filter((name) => !name.startsWith(".")).forEach((name) => {
+  Object.keys(metadata).forEach((name) => {
     const item = metadata[name];
     if (item?.albumId === album.id || (!item?.albumId && item?.album === album.name)) {
-      fs.unlinkSync(path.join(UPLOADS, name));
+      const filePath = path.join(UPLOADS, name);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      if (item.thumbnailUrl) {
+        const thumbnailPath = path.join(ROOT, item.thumbnailUrl.replace(/^\/+/, ""));
+        if (fs.existsSync(thumbnailPath)) fs.unlinkSync(thumbnailPath);
+      }
       delete metadata[name];
       deleted += 1;
     }

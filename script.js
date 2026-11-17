@@ -25,11 +25,13 @@ let currentUser = null;
 let authMode = "login";
 const previewModal = document.querySelector("#preview-modal");
 const previewGrid = document.querySelector("#preview-grid");
+const uploadProgress = document.querySelector("#upload-progress");
 const lightbox = document.querySelector("#lightbox");
 const lightboxContent = document.querySelector("#lightbox-content");
 const lightboxCaption = document.querySelector("#lightbox-caption");
 let pendingFiles = [];
 let pendingCaptions = [];
+let pendingThumbnails = [];
 let serverMemories = [];
 let serverAlbums = [];
 let lightboxItems = [];
@@ -212,7 +214,7 @@ const renderStacks = () => {
   Object.entries(grouped).forEach(([album, items]) => {
     const cover = items[0];
     const media = cover.kind === "video"
-      ? `<video src="${escapeHtml(cover.url)}" muted playsinline preload="metadata"></video>`
+      ? `<video src="${escapeHtml(cover.url)}" ${cover.thumbnailUrl ? `poster="${escapeHtml(cover.thumbnailUrl)}"` : ""} muted playsinline preload="metadata"></video>`
       : `<img src="${escapeHtml(cover.url)}" alt="${escapeHtml(album)}" />`;
     const stack = document.createElement("article");
     stack.className = "album-stack";
@@ -315,6 +317,7 @@ fileInput.addEventListener("change", async (event) => {
   if (!files.length) return;
   pendingFiles = files;
   pendingCaptions = files.map(() => "");
+  pendingThumbnails = await Promise.all(files.map(createVideoThumbnail));
   if (albumPicker.value === "__new__" && newAlbumInput.value.trim()) {
     const newName = newAlbumInput.value.trim().slice(0, 60);
     if (![...previewAlbumPicker.options].some((option) => option.value === newName)) {
@@ -336,13 +339,39 @@ const renderPreview = () => {
     const item = document.createElement("div");
     item.className = "preview-item";
     const url = URL.createObjectURL(file);
+    const poster = pendingThumbnails[index] ? ` poster="${URL.createObjectURL(pendingThumbnails[index])}"` : "";
     item.innerHTML = file.type.startsWith("video/")
-      ? `<video src="${url}" muted playsinline></video>`
+      ? `<video src="${url}"${poster} muted playsinline></video>`
       : `<img src="${url}" alt="Ảnh chờ lưu" />`;
     item.innerHTML += `<button class="preview-remove" type="button" data-index="${index}" aria-label="Bỏ file">×</button><input class="preview-caption" data-index="${index}" type="text" maxlength="240" placeholder="Viết 1 câu cho khoảnh khắc này..." value="${escapeHtml(pendingCaptions[index] || "")}" />`;
     previewGrid.append(item);
   });
 };
+
+const createVideoThumbnail = (file) => new Promise((resolve) => {
+  if (!file.type.startsWith("video/")) return resolve(null);
+  const video = document.createElement("video");
+  const source = URL.createObjectURL(file);
+  video.preload = "metadata";
+  video.muted = true;
+  video.playsInline = true;
+  video.onloadeddata = () => { video.currentTime = 0; };
+  video.onseeked = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      URL.revokeObjectURL(source);
+      resolve(blob);
+    }, "image/jpeg", 0.82);
+  };
+  video.onerror = () => {
+    URL.revokeObjectURL(source);
+    resolve(null);
+  };
+  video.src = source;
+});
 
 previewGrid.addEventListener("input", (event) => {
   const caption = event.target.closest(".preview-caption");
@@ -352,6 +381,8 @@ previewGrid.addEventListener("input", (event) => {
 const closePreview = () => {
   pendingFiles = [];
   pendingCaptions = [];
+  pendingThumbnails = [];
+  uploadProgress.hidden = true;
   previewGrid.innerHTML = "";
   previewModal.classList.remove("show");
   previewModal.setAttribute("aria-hidden", "true");
@@ -378,10 +409,27 @@ document.querySelector("#preview-save").addEventListener("click", async () => {
   formData.append("category", album === "Bạn bè" ? "friends" : album === "Lang thang" ? "travel" : "everyday");
   formData.append("quotes", JSON.stringify(pendingCaptions));
   pendingFiles.forEach((file) => formData.append("memories", file));
+  pendingThumbnails.forEach((thumbnail) => {
+    formData.append("thumbnails", thumbnail || new Blob([], { type: "image/jpeg" }), "thumbnail.jpg");
+  });
+  uploadProgress.hidden = false;
+  uploadProgress.value = 0;
   try {
-    const response = await fetch("/api/upload", { method: "POST", body: formData });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || "Upload thất bại");
+    const result = await new Promise((resolve, reject) => {
+      const request = new XMLHttpRequest();
+      request.open("POST", "/api/upload");
+      request.upload.onprogress = (event) => {
+        if (event.lengthComputable) uploadProgress.value = Math.round((event.loaded / event.total) * 100);
+      };
+      request.onload = () => {
+        let body;
+        try { body = JSON.parse(request.responseText); } catch { reject(new Error("Server trả về dữ liệu không hợp lệ")); return; }
+        if (request.status < 200 || request.status >= 300) reject(new Error(body.error || "Upload thất bại"));
+        else resolve(body);
+      };
+      request.onerror = () => reject(new Error("Mất kết nối khi upload, hãy thử lại"));
+      request.send(formData);
+    });
     serverMemories = [...result, ...serverMemories];
     await loadAlbums();
     newAlbumInput.hidden = true;
