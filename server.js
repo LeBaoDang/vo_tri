@@ -209,12 +209,20 @@ const handleAuth = async (request, response, pathname) => {
 
 const handleJournal = async (request, response, pathname) => {
   const id = pathname.startsWith("/api/journal/") ? decodeURIComponent(pathname.slice("/api/journal/".length)) : null;
-  if (request.method === "GET" && !id) return send(response, 200, JSON.stringify(readJournal()), "application/json");
+  if (request.method === "GET" && !id) {
+    const user = getUser(request);
+    const canSeePrivate = user && user.username === "admin";
+    const posts = readJournal().filter((post) => post.privacy !== "private" || canSeePrivate || post.ownerId === user?.id);
+    return send(response, 200, JSON.stringify(posts), "application/json");
+  }
   if (request.method === "POST" && !id) {
+    const user = requireUser(request, response);
+    if (!user) return;
     try {
       const body = await readJsonBody(request);
+      if (!String(body.title || "").trim()) return send(response, 400, JSON.stringify({ error: "Tiêu đề nhật ký đang trống" }), "application/json");
       if (!String(body.text || "").trim()) return send(response, 400, JSON.stringify({ error: "Nội dung nhật ký đang trống" }), "application/json");
-      const post = { id: `${Date.now()}-${crypto.randomBytes(3).toString("hex")}`, text: String(body.text).trim(), createdAt: new Date().toISOString() };
+      const post = { id: `${Date.now()}-${crypto.randomBytes(3).toString("hex")}`, title: String(body.title).trim().slice(0, 120), text: String(body.text).trim(), privacy: body.privacy === "private" ? "private" : "public", ownerId: user.id, createdAt: new Date().toISOString() };
       const posts = readJournal();
       posts.unshift(post);
       writeJournal(posts);
@@ -227,11 +235,17 @@ const handleJournal = async (request, response, pathname) => {
   const posts = readJournal();
   const index = posts.findIndex((post) => post.id === id);
   if (index === -1) return send(response, 404, JSON.stringify({ error: "Không tìm thấy nhật ký" }), "application/json");
+  const user = requireUser(request, response);
+  if (!user) return;
+  if (!canManage(user, posts[index].ownerId)) return send(response, 403, JSON.stringify({ error: "Đây không phải nhật ký của bạn!" }), "application/json");
   if (request.method === "PUT") {
     try {
       const body = await readJsonBody(request);
       if (!String(body.text || "").trim()) return send(response, 400, JSON.stringify({ error: "Nội dung nhật ký đang trống" }), "application/json");
+      if (body.title !== undefined && !String(body.title || "").trim()) return send(response, 400, JSON.stringify({ error: "Tiêu đề nhật ký đang trống" }), "application/json");
+      if (body.title !== undefined) posts[index].title = String(body.title).trim().slice(0, 120);
       posts[index].text = String(body.text).trim();
+      if (body.privacy !== undefined) posts[index].privacy = body.privacy === "private" ? "private" : "public";
       writeJournal(posts);
       return send(response, 200, JSON.stringify(posts[index]), "application/json");
     } catch (error) {

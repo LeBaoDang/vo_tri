@@ -194,7 +194,36 @@
         <p class="auth-error" id="auth-error"></p>
       </form>
     </div>
+    <div class="journal-modal" id="journal-modal" aria-hidden="true">
+      <form class="journal-dialog" id="journal-form">
+        <button class="modal-close" id="journal-close" type="button" aria-label="Đóng">×</button>
+        <p class="eyebrow"><span></span> nhật ký cá nhân</p>
+        <h2>Viết lại một ngày</h2>
+        <input id="journal-title" type="text" maxlength="120" placeholder="Tiêu đề nhật ký" required />
+        <textarea id="journal-text" maxlength="5000" placeholder="Hôm nay bạn muốn ghi lại điều gì? Có thể dùng **in đậm** hoặc *in nghiêng*." required></textarea>
+        <label class="journal-privacy" for="journal-privacy">Chế độ hiển thị
+          <select id="journal-privacy">
+            <option value="public">Công khai</option>
+            <option value="private">Riêng tư</option>
+          </select>
+        </label>
+        <div class="journal-form-actions">
+          <button class="text-btn" id="journal-cancel" type="button">Bỏ qua</button>
+          <button class="primary-btn" type="submit">Lưu nhật ký</button>
+        </div>
+        <p class="auth-error" id="journal-error"></p>
+      </form>
+    </div>
     <div class="toast" id="toast" role="status"></div>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").catch((error) => {
+            console.error("Không thể đăng ký Service Worker:", error);
+          });
+        });
+      }
+    </script>
     <script src="script.js"></script>
   </body>
 </html>
