@@ -224,8 +224,52 @@ html[data-theme="dark"] .journal-card .post-date { color: #686b63; }
 .comment-form { display: grid; grid-template-columns: 110px 1fr auto; gap: 7px; margin-top: 10px; }.comment-form input, .comment-form button { min-height: 38px; }
 .comment-form input { width: 100%; padding: 8px 9px; border: 1px solid var(--line); border-radius: 5px; }.comment-form button { padding: 7px 10px; color: #fff; background: var(--coral); border-radius: 5px; }
 
+img, video { max-width: 100%; }
+.page-shell, .collection, .memory-grid, .journal, .journal-grid { min-width: 0; }
+.memory-card, .album-stack, .journal-card { max-width: 100%; }
+.album-stack { overflow: hidden; }
+.album-stack > .interaction-bar { position: absolute; z-index: 5; top: 28px; right: 28px; margin: 0; }
+.album-stack > .interaction-bar .like-button { background: #fffdf8ed; box-shadow: 0 5px 16px #0002; }
+.card-info > div { min-width: 0; }
+.memory-quote { overflow-wrap: anywhere; }
+.comment-list, .comments-block, .comment-form { min-width: 0; }
+
 @media (max-width: 760px) {
   .topbar { gap: 8px; }.theme-toggle { width: 42px; height: 42px; flex-basis: 42px; }
   .comment-form { grid-template-columns: 1fr; }.comment-form button { min-height: 44px; }
   .zoom-overlay { padding: 62px 12px 54px; }.zoom-stage { max-width: calc(100vw - 24px); }.zoom-prev { left: 8px; }.zoom-next { right: 8px; }.zoom-caption { bottom: 10px; }
+}
+
+@media (max-width: 430px) {
+  html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+  .topbar { height: 64px; padding: 0 12px; gap: 6px; }
+  .brand { min-width: 0; gap: 6px; font-size: 14px; }
+  .brand-mark { width: 24px; height: 24px; flex: 0 0 24px; }
+  .auth-area { min-width: 0; gap: 4px; }
+  .auth-link, .auth-register { min-height: 40px; padding: 8px 7px; white-space: nowrap; }
+  .auth-register { font-size: 10px; }
+  .auth-user { max-width: 82px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .theme-toggle { width: 40px; height: 40px; flex-basis: 40px; }
+  .collection { width: 100%; padding-left: 16px; padding-right: 16px; }
+  .memory-grid { width: 100%; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 175px; gap: 16px; }
+  .memory-card { width: 100%; min-width: 0; }
+  .memory-card.tall, .memory-card.uploaded-tall { grid-row: span 2; }
+  .card-info { width: 100%; gap: 8px; }
+  .memory-quote { max-width: 230px; }
+  .date { flex: 0 0 auto; }
+  .album-stack { width: 100%; height: 320px; min-height: 320px; padding: 14px; }
+  .stack-cover { height: 220px; }
+  .stack-info { gap: 8px; padding-top: 12px; }
+  .stack-info h3 { max-width: 180px; overflow-wrap: anywhere; }
+  .stack-actions { max-width: 112px; align-items: flex-end; flex-wrap: wrap; justify-content: flex-end; }
+  .album-stack > .interaction-bar { top: 22px; right: 22px; }
+  .journal { width: 100%; padding-left: 16px; padding-right: 16px; }
+  .journal-grid { grid-template-columns: minmax(0, 1fr); }
+  .journal-card { width: 100%; max-width: 100%; }
+  .comment-form { grid-template-columns: minmax(0, 1fr); }
+  footer { width: 100%; text-align: center; }
+  footer span { width: 100%; }
+  .upload-panel { width: 100%; }
+  .category-picker, .new-album-input, .upload-panel .primary-btn { max-width: 100%; }
+  .toast { right: 12px; bottom: 12px; max-width: calc(100vw - 24px); }
 }

@@ -215,7 +215,7 @@ const getInteraction = async (type, id) => {
     return { likes: 0, comments: [] };
   }
 };
-const addInteractionControls = async (container, type, id) => {
+const addInteractionControls = async (container, type, id, includeComments = true) => {
   if (!container || !id) return;
   const state = await getInteraction(type, id);
   const liked = (() => { try { return localStorage.getItem(interactionKey(type, id)) === "1"; } catch (_) { return false; } })();
@@ -225,7 +225,7 @@ const addInteractionControls = async (container, type, id) => {
         <span>♥</span><span class="like-count">${Math.max(0, state.likes || 0)}</span>
       </button>
     </div>
-    <div class="comments-block">
+    ${includeComments ? `<div class="comments-block">
       <div class="comment-list">${(state.comments || []).map((comment) =>
         `<div class="comment-item"><strong>${escapeHtml(comment.name)}</strong>${escapeHtml(comment.text)}</div>`
       ).join("")}</div>
@@ -234,7 +234,7 @@ const addInteractionControls = async (container, type, id) => {
         <input name="text" maxlength="500" placeholder="Viết lời nhắn..." aria-label="Nội dung bình luận" required />
         <button type="submit">Gửi</button>
       </form>
-    </div>
+    </div>` : ""}
   `);
 };
 
@@ -320,7 +320,7 @@ const renderStacks = () => {
       openLightbox(items);
     });
     grid.append(stack);
-    if (albumRecord?.id) addInteractionControls(stack, "album", albumRecord.id);
+    if (albumRecord?.id) addInteractionControls(stack, "album", albumRecord.id, false);
   });
 };
 
