@@ -158,6 +158,13 @@ const readJournal = () => {
 };
 
 const writeJournal = (posts) => fs.writeFileSync(JOURNAL_DB, JSON.stringify(posts, null, 2));
+const addJournalAlbumPreview = (post) => {
+  if (!post.albumId) return post;
+  const album = readAlbums().find((candidate) => candidate.id === post.albumId);
+  if (!album) return { ...post, albumPreview: null };
+  const items = listUploads().filter((item) => item.albumId === album.id || item.album === album.name).slice(0, 4);
+  return { ...post, albumPreview: { id: album.id, name: album.name, items } };
+};
 
 const readInteractions = () => {
   try { return JSON.parse(fs.readFileSync(INTERACTION_DB, "utf8")); } catch { return {}; }
@@ -222,7 +229,7 @@ const handleJournal = async (request, response, pathname) => {
     const user = getUser(request);
     const canSeePrivate = user && user.username === "admin";
     const posts = readJournal().filter((post) => post.privacy !== "private" || canSeePrivate || post.ownerId === user?.id);
-    return send(response, 200, JSON.stringify(posts), "application/json");
+    return send(response, 200, JSON.stringify(posts.map(addJournalAlbumPreview)), "application/json");
   }
   if (request.method === "POST" && !id) {
     const user = requireUser(request, response);
@@ -231,11 +238,14 @@ const handleJournal = async (request, response, pathname) => {
       const body = await readJsonBody(request);
       if (!String(body.title || "").trim()) return send(response, 400, JSON.stringify({ error: "Tiêu đề nhật ký đang trống" }), "application/json");
       if (!String(body.text || "").trim()) return send(response, 400, JSON.stringify({ error: "Nội dung nhật ký đang trống" }), "application/json");
-      const post = { id: `${Date.now()}-${crypto.randomBytes(3).toString("hex")}`, title: String(body.title).trim().slice(0, 120), text: String(body.text).trim(), privacy: body.privacy === "private" ? "private" : "public", ownerId: user.id, createdAt: new Date().toISOString() };
+      const albumId = body.albumId ? String(body.albumId) : "";
+      const album = albumId ? readAlbums().find((candidate) => candidate.id === albumId) : null;
+      if (albumId && (!album || !canManage(user, album.ownerId))) return send(response, 403, JSON.stringify({ error: "Bạn không có quyền đính kèm album này!" }), "application/json");
+      const post = { id: `${Date.now()}-${crypto.randomBytes(3).toString("hex")}`, title: String(body.title).trim().slice(0, 120), text: String(body.text).trim(), privacy: body.privacy === "private" ? "private" : "public", ownerId: user.id, albumId: albumId || null, createdAt: new Date().toISOString() };
       const posts = readJournal();
       posts.unshift(post);
       writeJournal(posts);
-      return send(response, 201, JSON.stringify(post), "application/json");
+      return send(response, 201, JSON.stringify(addJournalAlbumPreview(post)), "application/json");
     } catch (error) {
       return send(response, 400, JSON.stringify({ error: error.message }), "application/json");
     }
@@ -255,8 +265,14 @@ const handleJournal = async (request, response, pathname) => {
       if (body.title !== undefined) posts[index].title = String(body.title).trim().slice(0, 120);
       posts[index].text = String(body.text).trim();
       if (body.privacy !== undefined) posts[index].privacy = body.privacy === "private" ? "private" : "public";
+      if (body.albumId !== undefined) {
+        const albumId = body.albumId ? String(body.albumId) : "";
+        const album = albumId ? readAlbums().find((candidate) => candidate.id === albumId) : null;
+        if (albumId && (!album || !canManage(user, album.ownerId))) return send(response, 403, JSON.stringify({ error: "Bạn không có quyền đính kèm album này!" }), "application/json");
+        posts[index].albumId = albumId || null;
+      }
       writeJournal(posts);
-      return send(response, 200, JSON.stringify(posts[index]), "application/json");
+      return send(response, 200, JSON.stringify(addJournalAlbumPreview(posts[index])), "application/json");
     } catch (error) {
       return send(response, 400, JSON.stringify({ error: error.message }), "application/json");
     }

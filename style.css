@@ -118,6 +118,10 @@ h2 span { color: var(--coral); }
 .post-date { color: #777260; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
 .journal-card p { margin: 20px 0; font-family: var(--serif); font-size: 19px; line-height: 1.35; }
 .journal-card h3 { margin: 18px 0 0; font-family: var(--serif); font-size: 22px; }
+.journal-album { margin: 18px 0 4px; padding-top: 14px; border-top: 1px solid #27302d22; }
+.journal-album-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.journal-album-grid img, .journal-album-grid video { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; background: #d7d4ca; }
+.journal-album-open { margin-top: 10px; padding: 0; color: var(--coral-dark); background: transparent; font-size: 10px; font-weight: 700; }
 .post-sign { color: #777260; font-family: var(--serif); font-size: 12px; font-style: italic; }
 .post-actions { display: flex; gap: 12px; margin-top: 15px; }
 .post-actions button { padding: 0; color: #777260; background: transparent; font-size: 10px; text-decoration: underline; }
@@ -490,6 +494,8 @@ img, video { max-width: 100%; }
   .journal-grid { grid-template-columns: minmax(0, 1fr); }
   .journal-card { width: 100%; max-width: 100%; }
   .journal-card p { overflow-wrap: anywhere; line-height: 1.45; }
+  .journal-album-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+  .journal-album-open { min-height: 36px; }
   .quote-block { padding: 46px 18px 52px; }
   .quote-icon { height: 42px; font-size: 52px; }
   .quote-block p { font-size: 18px; line-height: 1.58; }

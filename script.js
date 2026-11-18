@@ -15,6 +15,7 @@ const journalModal = document.querySelector("#journal-modal");
 const journalForm = document.querySelector("#journal-form");
 const journalTitle = document.querySelector("#journal-title");
 const journalText = document.querySelector("#journal-text");
+const journalAlbum = document.querySelector("#journal-album");
 const journalPrivacy = document.querySelector("#journal-privacy");
 const journalError = document.querySelector("#journal-error");
 const authArea = document.querySelector("#auth-area");
@@ -59,10 +60,16 @@ const populateAlbumPickers = (albums) => {
   const options = names.map((album) => `<option value="${escapeHtml(album)}">${escapeHtml(album)}</option>`).join("") + '<option value="__new__">＋ Tạo album mới</option>';
   const currentUploadAlbum = albumPicker.value;
   const currentPreviewAlbum = previewAlbumPicker.value;
+  const currentJournalAlbum = journalAlbum.value;
   albumPicker.innerHTML = options;
   previewAlbumPicker.innerHTML = options;
+  journalAlbum.innerHTML = '<option value="">Không đính kèm album</option>' + names.map((album) => {
+    const record = albums.find((candidate) => candidate.name === album);
+    return `<option value="${escapeHtml(record.id)}">${escapeHtml(album)}</option>`;
+  }).join("");
   if (names.includes(currentUploadAlbum)) albumPicker.value = currentUploadAlbum;
   if (names.includes(currentPreviewAlbum)) previewAlbumPicker.value = currentPreviewAlbum;
+  if (albums.some((album) => album.id === currentJournalAlbum)) journalAlbum.value = currentJournalAlbum;
 };
 
 const addPostActions = (post) => {
@@ -238,14 +245,18 @@ const addInteractionControls = async (container, type, id, includeComments = tru
   `);
 };
 
-const renderJournalPost = ({ id, title, text, privacy, ownerId, createdAt }) => {
+const renderJournalPost = ({ id, title, text, privacy, ownerId, createdAt, albumPreview }) => {
   const post = document.createElement("article");
   post.className = "journal-card yellow-note";
   post.dataset.userPost = "true";
   post.dataset.postId = id;
   post.dataset.ownerId = ownerId || "";
+  post.dataset.albumId = albumPreview?.id || "";
   const date = createdAt ? new Date(createdAt).toLocaleDateString("vi-VN") : "mới viết";
-  post.innerHTML = `<span class="post-date">${date} · ${privacy === "private" ? "riêng tư" : "công khai"}</span>${title ? `<h3>${escapeHtml(title)}</h3>` : ""}<p>${formatJournalText(text)}</p><span class="post-sign">— ghi bởi tụi mình</span>`;
+  const albumMarkup = albumPreview?.items?.length ? `<div class="journal-album" data-album-id="${escapeHtml(albumPreview.id)}"><div class="journal-album-grid">${albumPreview.items.map((item) => item.kind === "video"
+    ? `<video src="${escapeHtml(item.url)}" ${item.thumbnailUrl ? `poster="${escapeHtml(item.thumbnailUrl)}"` : ""} muted playsinline preload="metadata"></video>`
+    : `<img src="${escapeHtml(item.url)}" alt="${escapeHtml(albumPreview.name)}" />`).join("")}</div><button class="journal-album-open" type="button">Xem album “${escapeHtml(albumPreview.name)}” ↗</button></div>` : "";
+  post.innerHTML = `<span class="post-date">${date} · ${privacy === "private" ? "riêng tư" : "công khai"}</span>${title ? `<h3>${escapeHtml(title)}</h3>` : ""}<p>${formatJournalText(text)}</p>${albumMarkup}<span class="post-sign">— ghi bởi tụi mình</span>`;
   journalGrid.prepend(post);
   addPostActions(post);
   addInteractionControls(post, "journal", id);
@@ -263,13 +274,22 @@ const loadJournalPosts = async () => {
 };
 
 const closeJournalModal = () => {
+  editingJournalId = null;
   journalModal.classList.remove("show");
   journalModal.setAttribute("aria-hidden", "true");
   journalForm.reset();
+  journalAlbum.value = "";
   journalError.textContent = "";
 };
-const openJournalModal = () => {
+let editingJournalId = null;
+const openJournalModal = (post = null) => {
   if (!requireAuth()) return;
+  const source = post?.matches?.(".journal-card") ? post : null;
+  editingJournalId = source?.dataset.postId || null;
+  journalTitle.value = source?.querySelector("h3")?.textContent || "";
+  journalText.value = source?.querySelector("p")?.textContent || "";
+  journalAlbum.value = source?.dataset.albumId || "";
+  journalPrivacy.value = source?.querySelector(".post-date")?.textContent.includes("riêng tư") ? "private" : "public";
   journalModal.classList.add("show");
   journalModal.setAttribute("aria-hidden", "false");
   journalTitle.focus();
@@ -280,13 +300,14 @@ journalForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   journalError.textContent = "";
   try {
-    const response = await fetch("/api/journal", {
-      method: "POST",
+    const response = await fetch(editingJournalId ? `/api/journal/${encodeURIComponent(editingJournalId)}` : "/api/journal", {
+      method: editingJournalId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: journalTitle.value, text: journalText.value, privacy: journalPrivacy.value }),
+      body: JSON.stringify({ title: journalTitle.value, text: journalText.value, privacy: journalPrivacy.value, albumId: journalAlbum.value || null }),
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || "Không thể lưu nhật ký");
+    if (editingJournalId) document.querySelector(`[data-post-id="${CSS.escape(editingJournalId)}"]`)?.remove();
     renderJournalPost(result);
     closeJournalModal();
     showToast("Đã lưu nhật ký vào server ✦");
@@ -624,6 +645,17 @@ document.addEventListener("submit", async (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  const journalAlbumButton = event.target.closest(".journal-album-open");
+  if (journalAlbumButton) {
+    const post = journalAlbumButton.closest(".journal-card");
+    const albumItems = [...post.querySelectorAll(".journal-album-grid img, .journal-album-grid video")].map((media) => ({
+      id: media.currentSrc || media.src,
+      url: media.currentSrc || media.src,
+      kind: media.tagName === "VIDEO" ? "video" : "image",
+    }));
+    openLightbox(albumItems);
+    return;
+  }
   const shareButton = event.target.closest(".share-album");
   if (shareButton) {
     const stack = shareButton.closest(".album-stack");
@@ -690,20 +722,8 @@ document.addEventListener("click", (event) => {
   const editPost = event.target.closest(".edit-post");
   if (editPost) {
     const post = editPost.closest(".journal-card");
-    const title = window.prompt("Chỉnh tiêu đề nhật ký:", post.querySelector("h3")?.textContent || "");
-    const text = title === null ? null : window.prompt("Chỉnh lại nội dung nhật ký:", post.querySelector("p").textContent);
-    if (text?.trim()) {
-      fetch(`/api/journal/${encodeURIComponent(post.dataset.postId)}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim(), text: text.trim() }),
-      }).then((response) => {
-        if (!response.ok) throw new Error("Không thể sửa nhật ký");
-        if (post.querySelector("h3")) post.querySelector("h3").textContent = title.trim();
-        post.querySelector("p").textContent = text.trim();
-        showToast("Đã sửa dòng nhật ký ✦");
-      }).catch((error) => showToast(error.message));
-    }
+    openJournalModal(post);
+    return;
   }
   const deletePost = event.target.closest(".delete-post");
   if (deletePost) {

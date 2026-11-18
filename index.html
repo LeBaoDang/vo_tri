@@ -221,6 +221,11 @@
         <h2>Viết lại một ngày</h2>
         <input id="journal-title" type="text" maxlength="120" placeholder="Tiêu đề nhật ký" required />
         <textarea id="journal-text" maxlength="5000" placeholder="Hôm nay bạn muốn ghi lại điều gì? Có thể dùng **in đậm** hoặc *in nghiêng*." required></textarea>
+        <label class="journal-privacy" for="journal-album">Đính kèm album
+          <select id="journal-album">
+            <option value="">Không đính kèm album</option>
+          </select>
+        </label>
         <label class="journal-privacy" for="journal-privacy">Chế độ hiển thị
           <select id="journal-privacy">
             <option value="public">Công khai</option>
