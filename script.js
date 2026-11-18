@@ -310,7 +310,8 @@ const renderStacks = () => {
       ? `<video src="${escapeHtml(cover.url)}" ${cover.thumbnailUrl ? `poster="${escapeHtml(cover.thumbnailUrl)}"` : ""} muted playsinline preload="metadata"></video>`
       : `<img src="${escapeHtml(cover.url)}" alt="${escapeHtml(album)}" />`;
     const stack = document.createElement("article");
-    stack.className = "album-stack";
+    const stackSize = items.length === 1 ? "stack-single" : items.length === 2 ? "stack-double" : "stack-multiple";
+    stack.className = `album-stack ${stackSize}`;
     stack.dataset.category = items[0].category || "everyday";
     const albumRecord = serverAlbums.find((candidate) => candidate.name === album);
     const canDeleteAlbum = currentUser && ((currentUser.role === "admin" && currentUser.username === "admin") || currentUser.id === items[0].ownerId);
