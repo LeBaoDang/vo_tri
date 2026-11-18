@@ -501,3 +501,27 @@ img, video { max-width: 100%; }
   .category-picker, .new-album-input, .upload-panel .primary-btn { max-width: 100%; }
   .toast { right: 12px; bottom: 12px; max-width: calc(100vw - 24px); }
 }
+
+/* Content-driven grid: captions must define card height instead of overflowing fixed rows. */
+.memory-grid {
+  grid-auto-rows: auto;
+  align-items: start;
+}
+.memory-card,
+.memory-card.tall,
+.memory-card.uploaded-tall {
+  grid-row: auto;
+  height: auto;
+}
+.card-image {
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+.memory-card.tall .card-image,
+.memory-card.uploaded-tall .card-image {
+  aspect-ratio: 4 / 5;
+}
+.album-stack {
+  grid-row: auto;
+  height: auto;
+}
