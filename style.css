@@ -189,6 +189,21 @@ html[data-theme="dark"] .journal-card { filter: brightness(.82) saturate(.85); }
 html[data-theme="dark"] input,
 html[data-theme="dark"] textarea,
 html[data-theme="dark"] select { color: var(--ink); background: #303431; border-color: var(--line); }
+html[data-theme="dark"] footer,
+html[data-theme="dark"] footer b,
+html[data-theme="dark"] .post-sign,
+html[data-theme="dark"] .post-date,
+html[data-theme="dark"] .upload-note,
+html[data-theme="dark"] .comment-item,
+html[data-theme="dark"] .comment-form input,
+html[data-theme="dark"] .card-info p,
+html[data-theme="dark"] .brand,
+html[data-theme="dark"] .main-nav a,
+html[data-theme="dark"] .text-btn,
+html[data-theme="dark"] .auth-link { color: #e7e9e5; }
+html[data-theme="dark"] .journal-card { color: #27302d; }
+html[data-theme="dark"] .journal-card .post-sign,
+html[data-theme="dark"] .journal-card .post-date { color: #686b63; }
 .theme-toggle { width: 44px; height: 44px; display: grid; flex: 0 0 44px; place-items: center; color: var(--ink); background: var(--cream); border: 1px solid var(--line); border-radius: 50%; font-size: 18px; }
 .topbar { gap: 14px; }.auth-area { margin-left: auto; }
 

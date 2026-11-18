@@ -513,6 +513,9 @@ const server = http.createServer(async (request, response) => {
   const requested = requestUrl.pathname === "/" ? "/index.html" : requestUrl.pathname;
   const filePath = path.resolve(ROOT, `.${requested}`);
   if (!filePath.startsWith(ROOT) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) return send(response, 404, "Not Found");
+  if ([".html", ".css", ".js", ".json", ".webmanifest", ".svg"].includes(path.extname(filePath).toLowerCase())) {
+    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  }
   send(response, 200, fs.readFileSync(filePath), MIME_TYPES[path.extname(filePath).toLowerCase()] || "application/octet-stream");
 });
 
