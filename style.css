@@ -69,7 +69,7 @@ h2 span { color: var(--coral); }
 .filter-menu button { padding: 9px 10px; color: var(--muted); background: transparent; text-align: left; font-size: 11px; }
 .filter-menu button:hover { color: var(--ink); background: var(--cream); }
 .memory-grid { display: grid; grid-template-columns: 1.08fr .92fr .92fr; grid-auto-rows: 145px; gap: 22px; }
-.album-stack { position: relative; min-height: 340px; padding: 18px; cursor: pointer; border-radius: 16px; background: #fffaf2; box-shadow: 0 12px 25px #5f51351c; transition: .25s ease; }
+.album-stack { position: relative; grid-row: span 3; min-height: 340px; padding: 18px; cursor: pointer; border-radius: 16px; background: #fffaf2; box-shadow: 0 12px 25px #5f51351c; transition: .25s ease; }
 .stack-actions { display: flex; align-items: center; gap: 8px; }
 .share-album, .delete-album { min-height: 32px; padding: 6px 9px; color: var(--coral-dark); background: transparent; border: 1px solid #e8b8aa; border-radius: 5px; font-size: 10px; }
 .share-album { color: var(--ink); border-color: var(--line); }
@@ -82,6 +82,8 @@ h2 span { color: var(--coral); }
 .stack-info h3 { margin: 0 0 4px; font-family: var(--serif); font-size: 22px; }
 .stack-info p { margin: 0; color: var(--muted); font-size: 11px; }
 .stack-count { color: var(--coral); font-size: 11px; font-weight: 700; }
+.stack-info > div:first-child { min-width: 0; }
+.stack-info h3, .stack-info p { overflow-wrap: anywhere; }
 .memory-card { min-width: 0; grid-row: span 2; transition: transform .25s ease; }
 .memory-card.tall, .memory-card.uploaded-tall { grid-row: span 3; }
 .memory-card.uploaded-wide { grid-column: span 2; }
@@ -228,6 +230,9 @@ img, video {
   .journal-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+  .album-stack {
+    grid-row: auto;
+  }
   .memory-card,
   .album-stack,
   .journal-card,
@@ -302,6 +307,26 @@ img, video {
   .stack-info h3,
   .stack-info p {
     overflow-wrap: anywhere;
+  }
+}
+
+@media (min-width: 431px) and (max-width: 900px) {
+  .memory-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 145px;
+  }
+  .album-stack {
+    grid-row: span 3;
+  }
+  .stack-cover {
+    height: clamp(190px, 30vw, 255px);
+  }
+  .stack-info {
+    gap: 12px;
+  }
+  .stack-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 
