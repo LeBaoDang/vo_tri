@@ -122,6 +122,22 @@ h2 span { color: var(--coral); }
 .journal-album-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
 .journal-album-grid img, .journal-album-grid video { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; background: #d7d4ca; }
 .journal-album-open { margin-top: 10px; padding: 0; color: var(--coral-dark); background: transparent; font-size: 10px; font-weight: 700; }
+.journal-card-linked { cursor: pointer; }
+.journal-card-linked h3, .journal-card-linked p, .journal-card-linked .journal-album-grid { transition: transform .2s ease, opacity .2s ease; }
+.journal-card-linked:hover h3, .journal-card-linked:hover p { transform: translateX(3px); }
+.journal-detail-modal { position: fixed; z-index: 34; inset: 0; display: none; place-items: center; padding: 20px; background: #27302db8; backdrop-filter: blur(8px); }
+.journal-detail-modal.show { display: grid; }
+.journal-detail-dialog { position: relative; width: min(860px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; padding: 38px; color: var(--ink); background: var(--paper); border-radius: 16px; box-shadow: 0 24px 70px #0004; }
+.journal-detail-dialog .modal-close { position: sticky; top: 0; float: right; z-index: 2; }
+.journal-detail-date { display: block; margin-bottom: 12px; color: var(--muted); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+.journal-detail-dialog h2 { padding-right: 36px; margin-bottom: 18px; font-size: clamp(28px, 5vw, 42px); }
+.journal-detail-text { margin-bottom: 24px; font-family: var(--serif); font-size: clamp(17px, 2.4vw, 21px); line-height: 1.65; overflow-wrap: anywhere; }
+.journal-detail-album { padding-top: 18px; border-top: 1px solid var(--line); }
+.journal-detail-album-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; color: var(--muted); font-size: 11px; }
+.journal-detail-album-heading button { color: var(--coral-dark); background: transparent; font-weight: 700; }
+.journal-detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.journal-detail-media { min-width: 0; aspect-ratio: 4 / 3; padding: 0; overflow: hidden; background: #d7d4ca; border-radius: 8px; }
+.journal-detail-media img, .journal-detail-media video { width: 100%; height: 100%; display: block; object-fit: cover; }
 .post-sign { color: #777260; font-family: var(--serif); font-size: 12px; font-style: italic; }
 .post-actions { display: flex; gap: 12px; margin-top: 15px; }
 .post-actions button { padding: 0; color: #777260; background: transparent; font-size: 10px; text-decoration: underline; }
@@ -496,6 +512,13 @@ img, video { max-width: 100%; }
   .journal-card p { overflow-wrap: anywhere; line-height: 1.45; }
   .journal-album-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
   .journal-album-open { min-height: 36px; }
+  .journal-detail-modal { padding: 10px; }
+  .journal-detail-dialog { max-height: calc(100vh - 20px); padding: 24px 16px; border-radius: 12px; }
+  .journal-detail-dialog h2 { font-size: 27px; }
+  .journal-detail-text { font-size: 17px; line-height: 1.55; }
+  .journal-detail-album-heading { align-items: flex-start; flex-direction: column; }
+  .journal-detail-album-heading button { min-height: 44px; }
+  .journal-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
   .quote-block { padding: 46px 18px 52px; }
   .quote-icon { height: 42px; font-size: 52px; }
   .quote-block p { font-size: 18px; line-height: 1.58; }

@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css?v=20261118-journalalbumfix" />
+    <link rel="stylesheet" href="style.css?v=20261118-journalstoryfix" />
   </head>
   <body>
     <div class="page-shell">
@@ -239,6 +239,21 @@
         <p class="auth-error" id="journal-error"></p>
       </form>
     </div>
+    <div class="journal-detail-modal" id="journal-detail-modal" aria-hidden="true">
+      <article class="journal-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="journal-detail-title">
+        <button class="modal-close" id="journal-detail-close" type="button" aria-label="Đóng">×</button>
+        <span class="journal-detail-date" id="journal-detail-date"></span>
+        <h2 id="journal-detail-title"></h2>
+        <div class="journal-detail-text" id="journal-detail-text"></div>
+        <div class="journal-detail-album" id="journal-detail-album">
+          <div class="journal-detail-album-heading">
+            <span>Album đính kèm</span>
+            <button id="journal-detail-open-album" type="button">Xem toàn bộ album ↗</button>
+          </div>
+          <div class="journal-detail-grid" id="journal-detail-grid"></div>
+        </div>
+      </article>
+    </div>
     <div class="toast" id="toast" role="status"></div>
     <script>
       if ("serviceWorker" in navigator) {
@@ -249,7 +264,7 @@
         });
       }
     </script>
-    <script src="script.js?v=20261118-journalalbumfix"></script>
+    <script src="script.js?v=20261118-journalstoryfix"></script>
     <script>(function(s){s.dataset.zone='12286534',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   </body>
 </html>

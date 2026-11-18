@@ -18,6 +18,13 @@ const journalText = document.querySelector("#journal-text");
 const journalAlbum = document.querySelector("#journal-album");
 const journalPrivacy = document.querySelector("#journal-privacy");
 const journalError = document.querySelector("#journal-error");
+const journalDetailModal = document.querySelector("#journal-detail-modal");
+const journalDetailDate = document.querySelector("#journal-detail-date");
+const journalDetailTitle = document.querySelector("#journal-detail-title");
+const journalDetailText = document.querySelector("#journal-detail-text");
+const journalDetailAlbum = document.querySelector("#journal-detail-album");
+const journalDetailGrid = document.querySelector("#journal-detail-grid");
+const journalDetailOpenAlbum = document.querySelector("#journal-detail-open-album");
 const authArea = document.querySelector("#auth-area");
 const authModal = document.querySelector("#auth-modal");
 const authForm = document.querySelector("#auth-form");
@@ -257,6 +264,7 @@ const renderJournalPost = ({ id, title, text, privacy, ownerId, createdAt, album
     ? `<video src="${escapeHtml(item.url)}" ${item.thumbnailUrl ? `poster="${escapeHtml(item.thumbnailUrl)}"` : ""} muted playsinline preload="metadata"></video>`
     : `<img src="${escapeHtml(item.url)}" alt="${escapeHtml(albumPreview.name)}" />`).join("")}</div><button class="journal-album-open" type="button">Xem album “${escapeHtml(albumPreview.name)}” ↗</button></div>` : "";
   post.innerHTML = `<span class="post-date">${date} · ${privacy === "private" ? "riêng tư" : "công khai"}</span>${title ? `<h3>${escapeHtml(title)}</h3>` : ""}<p>${formatJournalText(text)}</p>${albumMarkup}<span class="post-sign">— ghi bởi tụi mình</span>`;
+  post.classList.toggle("journal-card-linked", Boolean(albumPreview?.id));
   journalGrid.prepend(post);
   addPostActions(post);
   addInteractionControls(post, "journal", id);
@@ -296,6 +304,37 @@ const openJournalModal = (post = null) => {
 };
 document.querySelector("#journal-close").addEventListener("click", closeJournalModal);
 document.querySelector("#journal-cancel").addEventListener("click", closeJournalModal);
+let journalDetailItems = [];
+const closeJournalDetail = () => {
+  journalDetailModal.classList.remove("show");
+  journalDetailModal.setAttribute("aria-hidden", "true");
+  journalDetailItems = [];
+};
+const openJournalDetail = (post) => {
+  if (!post?.dataset.postId) return;
+  const albumId = post.dataset.albumId;
+  const album = serverAlbums.find((candidate) => candidate.id === albumId);
+  journalDetailItems = albumId
+    ? serverMemories.filter((item) => item.albumId === albumId || item.album === album?.name)
+    : [];
+  journalDetailDate.textContent = post.querySelector(".post-date")?.textContent || "";
+  journalDetailTitle.textContent = post.querySelector("h3")?.textContent || "Một dòng nhật ký";
+  journalDetailText.innerHTML = formatJournalText(post.querySelector("p")?.textContent || "");
+  journalDetailAlbum.hidden = journalDetailItems.length === 0;
+  journalDetailGrid.innerHTML = journalDetailItems.map((item) => item.kind === "video"
+    ? `<button class="journal-detail-media" type="button" data-detail-media="${escapeHtml(item.id)}"><video src="${escapeHtml(item.url)}" ${item.thumbnailUrl ? `poster="${escapeHtml(item.thumbnailUrl)}"` : ""} muted playsinline preload="metadata"></video></button>`
+    : `<button class="journal-detail-media" type="button" data-detail-media="${escapeHtml(item.id)}"><img src="${escapeHtml(item.url)}" alt="${escapeHtml(album?.name || "Album đính kèm")}" /></button>`
+  ).join("");
+  journalDetailModal.classList.add("show");
+  journalDetailModal.setAttribute("aria-hidden", "false");
+};
+document.querySelector("#journal-detail-close").addEventListener("click", closeJournalDetail);
+journalDetailModal.addEventListener("click", (event) => {
+  if (event.target === journalDetailModal) closeJournalDetail();
+});
+journalDetailOpenAlbum.addEventListener("click", () => {
+  if (journalDetailItems.length) openLightbox(journalDetailItems);
+});
 journalForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   journalError.textContent = "";
@@ -645,15 +684,16 @@ document.addEventListener("submit", async (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  const journalDetailMedia = event.target.closest("[data-detail-media]");
+  if (journalDetailMedia) {
+    const index = journalDetailItems.findIndex((item) => item.id === journalDetailMedia.dataset.detailMedia);
+    if (index >= 0) openZoom(journalDetailItems, index);
+    return;
+  }
   const journalAlbumButton = event.target.closest(".journal-album-open");
   if (journalAlbumButton) {
     const post = journalAlbumButton.closest(".journal-card");
-    const albumItems = [...post.querySelectorAll(".journal-album-grid img, .journal-album-grid video")].map((media) => ({
-      id: media.currentSrc || media.src,
-      url: media.currentSrc || media.src,
-      kind: media.tagName === "VIDEO" ? "video" : "image",
-    }));
-    openLightbox(albumItems);
+    openJournalDetail(post);
     return;
   }
   const shareButton = event.target.closest(".share-album");
@@ -738,6 +778,11 @@ document.addEventListener("click", (event) => {
         .catch((error) => showToast(error.message));
     }
   }
+  const journalPost = event.target.closest(".journal-card-linked");
+  if (journalPost && !event.target.closest(".post-actions, .interaction-bar, .comments-block")) {
+    openJournalDetail(journalPost);
+    return;
+  }
   if (!event.target.closest(".filter-btn") && !event.target.closest(".filter-menu")) filterMenu.classList.remove("show");
 });
 
@@ -808,6 +853,8 @@ document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeZoom();
     if (event.key === "ArrowLeft") moveZoom(-1);
     if (event.key === "ArrowRight") moveZoom(1);
+  } else if (journalDetailModal.classList.contains("show")) {
+    if (event.key === "Escape") closeJournalDetail();
   } else if (lightbox.classList.contains("show")) {
     if (event.key === "Escape") closeLightbox();
   }
