@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nhặt Nắng — Kỷ niệm lang thang</title>
     <meta name="description" content="Góc nhỏ để lưu những ngày lang thang cùng mình và bạn bè." />
+    <meta name="theme-color" content="#f8f6f1" />
+    <link rel="manifest" href="/manifest.json" />
+    <script>
+      (function () {
+        try {
+          const saved = localStorage.getItem("nhat-nang-theme");
+          document.documentElement.dataset.theme = saved === "dark" ? "dark" : "light";
+        } catch (_) {
+          document.documentElement.dataset.theme = "light";
+        }
+      }());
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -22,6 +34,7 @@
           <a href="#nhat-ky">Nhật ký lang thang</a>
           <a href="#ve-chung-minh">Về tụi mình</a>
         </nav>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Chuyển chế độ giao diện">☾</button>
         <div class="auth-area" id="auth-area">
           <button class="auth-link" id="login-open" type="button">Đăng nhập</button>
           <button class="primary-btn auth-register" id="register-open" type="button">Đăng ký</button>
@@ -180,6 +193,13 @@
       <div class="lightbox-content" id="lightbox-content"></div>
       <button class="lightbox-arrow next" id="lightbox-next" type="button" aria-label="Ảnh tiếp">›</button>
       <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+    <div class="zoom-overlay" id="zoom-overlay" aria-hidden="true">
+      <button class="zoom-close" id="zoom-close" type="button" aria-label="Đóng ảnh">×</button>
+      <button class="zoom-arrow zoom-prev" id="zoom-prev" type="button" aria-label="Ảnh trước">‹</button>
+      <div class="zoom-stage" id="zoom-stage"></div>
+      <button class="zoom-arrow zoom-next" id="zoom-next" type="button" aria-label="Ảnh tiếp">›</button>
+      <div class="zoom-caption" id="zoom-caption"></div>
     </div>
     <div class="auth-modal" id="auth-modal" aria-hidden="true">
       <form class="auth-dialog" id="auth-form">

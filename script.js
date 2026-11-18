@@ -35,6 +35,9 @@ const uploadProgress = document.querySelector("#upload-progress");
 const lightbox = document.querySelector("#lightbox");
 const lightboxContent = document.querySelector("#lightbox-content");
 const lightboxCaption = document.querySelector("#lightbox-caption");
+const zoomOverlay = document.querySelector("#zoom-overlay");
+const zoomStage = document.querySelector("#zoom-stage");
+const zoomCaption = document.querySelector("#zoom-caption");
 let pendingFiles = [];
 let pendingCaptions = [];
 let pendingThumbnails = [];
@@ -189,6 +192,52 @@ const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => (
 }[character]));
 const formatJournalText = (value) => escapeHtml(value).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>").replace(/\n/g, "<br />");
 
+const themeToggle = document.querySelector("#theme-toggle");
+const applyTheme = (theme) => {
+  document.documentElement.dataset.theme = theme;
+  themeToggle.textContent = theme === "dark" ? "☀" : "☾";
+  themeToggle.setAttribute("aria-label", theme === "dark" ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#171918" : "#f8f6f1");
+};
+applyTheme(document.documentElement.dataset.theme || "light");
+themeToggle.addEventListener("click", () => {
+  const theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(theme);
+  try { localStorage.setItem("nhat-nang-theme", theme); } catch (_) {}
+});
+
+const interactionKey = (type, id) => `nhat-nang-liked:${type}:${id}`;
+const getInteraction = async (type, id) => {
+  try {
+    const response = await fetch(`/api/interactions/${encodeURIComponent(type)}/${encodeURIComponent(id)}`);
+    return response.ok ? await response.json() : { likes: 0, comments: [] };
+  } catch (_) {
+    return { likes: 0, comments: [] };
+  }
+};
+const addInteractionControls = async (container, type, id) => {
+  if (!container || !id) return;
+  const state = await getInteraction(type, id);
+  const liked = (() => { try { return localStorage.getItem(interactionKey(type, id)) === "1"; } catch (_) { return false; } })();
+  container.insertAdjacentHTML("beforeend", `
+    <div class="interaction-bar">
+      <button class="like-button ${liked ? "liked" : ""}" type="button" data-like-type="${type}" data-like-id="${escapeHtml(id)}" aria-label="Thả tim">
+        <span>♥</span><span class="like-count">${Math.max(0, state.likes || 0)}</span>
+      </button>
+    </div>
+    <div class="comments-block">
+      <div class="comment-list">${(state.comments || []).map((comment) =>
+        `<div class="comment-item"><strong>${escapeHtml(comment.name)}</strong>${escapeHtml(comment.text)}</div>`
+      ).join("")}</div>
+      <form class="comment-form" data-comment-type="${type}" data-comment-id="${escapeHtml(id)}">
+        <input name="name" maxlength="40" placeholder="Tên của bạn" aria-label="Tên hiển thị" />
+        <input name="text" maxlength="500" placeholder="Viết lời nhắn..." aria-label="Nội dung bình luận" required />
+        <button type="submit">Gửi</button>
+      </form>
+    </div>
+  `);
+};
+
 const renderJournalPost = ({ id, title, text, privacy, ownerId, createdAt }) => {
   const post = document.createElement("article");
   post.className = "journal-card yellow-note";
@@ -199,6 +248,7 @@ const renderJournalPost = ({ id, title, text, privacy, ownerId, createdAt }) => 
   post.innerHTML = `<span class="post-date">${date} · ${privacy === "private" ? "riêng tư" : "công khai"}</span>${title ? `<h3>${escapeHtml(title)}</h3>` : ""}<p>${formatJournalText(text)}</p><span class="post-sign">— ghi bởi tụi mình</span>`;
   journalGrid.prepend(post);
   addPostActions(post);
+  addInteractionControls(post, "journal", id);
 };
 
 const loadJournalPosts = async () => {
@@ -270,6 +320,7 @@ const renderStacks = () => {
       openLightbox(items);
     });
     grid.append(stack);
+    if (albumRecord?.id) addInteractionControls(stack, "album", albumRecord.id);
   });
 };
 
@@ -301,6 +352,45 @@ const closeLightbox = () => {
   lightbox.setAttribute("aria-hidden", "true");
   lightboxContent.innerHTML = "";
 };
+
+let zoomIndex = 0;
+let zoomItems = [];
+const renderZoom = () => {
+  const item = zoomItems[zoomIndex];
+  if (!item) return;
+  zoomStage.innerHTML = item.kind === "video"
+    ? `<video src="${escapeHtml(item.url)}" controls autoplay playsinline></video>`
+    : `<img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.quote || "Kỷ niệm")}" />`;
+  zoomCaption.textContent = item.quote || `${zoomIndex + 1} / ${zoomItems.length}`;
+};
+const openZoom = (items, index) => {
+  zoomItems = items.filter((item) => item.kind === "image" || item.kind === "video");
+  zoomIndex = Math.max(0, zoomItems.findIndex((item) => item.id === items[index]?.id));
+  renderZoom();
+  zoomOverlay.classList.add("show");
+  zoomOverlay.setAttribute("aria-hidden", "false");
+};
+const closeZoom = () => {
+  zoomOverlay.classList.remove("show");
+  zoomOverlay.setAttribute("aria-hidden", "true");
+  zoomStage.innerHTML = "";
+};
+const moveZoom = (step) => {
+  if (!zoomItems.length) return;
+  zoomIndex = (zoomIndex + step + zoomItems.length) % zoomItems.length;
+  renderZoom();
+};
+document.querySelector("#zoom-close").addEventListener("click", closeZoom);
+document.querySelector("#zoom-prev").addEventListener("click", () => moveZoom(-1));
+document.querySelector("#zoom-next").addEventListener("click", () => moveZoom(1));
+let zoomTouchX = null;
+zoomOverlay.addEventListener("touchstart", (event) => { zoomTouchX = event.changedTouches[0].screenX; }, { passive: true });
+zoomOverlay.addEventListener("touchend", (event) => {
+  if (zoomTouchX === null) return;
+  const distance = event.changedTouches[0].screenX - zoomTouchX;
+  if (Math.abs(distance) > 45) moveZoom(distance > 0 ? -1 : 1);
+  zoomTouchX = null;
+}, { passive: true });
 
 const loadServerMemories = async () => {
   try {
@@ -485,6 +575,53 @@ document.querySelector("#preview-save").addEventListener("click", async () => {
   }
 });
 
+document.addEventListener("click", async (event) => {
+  const likeButton = event.target.closest(".like-button");
+  if (!likeButton) return;
+  const type = likeButton.dataset.likeType;
+  const id = likeButton.dataset.likeId;
+  const key = interactionKey(type, id);
+  let liked = false;
+  try { liked = localStorage.getItem(key) === "1"; } catch (_) {}
+  const nextLiked = !liked;
+  likeButton.classList.toggle("liked", nextLiked);
+  likeButton.classList.remove("bump");
+  void likeButton.offsetWidth;
+  likeButton.classList.add("bump");
+  const count = likeButton.querySelector(".like-count");
+  count.textContent = Math.max(0, Number(count.textContent) + (nextLiked ? 1 : -1));
+  try { localStorage.setItem(key, nextLiked ? "1" : "0"); } catch (_) {}
+  try {
+    await fetch(`/api/interactions/${encodeURIComponent(type)}/${encodeURIComponent(id)}/like`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ liked: nextLiked }),
+    });
+  } catch (_) {}
+});
+
+document.addEventListener("submit", async (event) => {
+  const form = event.target.closest(".comment-form");
+  if (!form) return;
+  event.preventDefault();
+  const name = form.elements.name.value;
+  const text = form.elements.text.value;
+  try {
+    const response = await fetch(`/api/interactions/${encodeURIComponent(form.dataset.commentType)}/${encodeURIComponent(form.dataset.commentId)}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, text }),
+    });
+    const comment = await response.json();
+    if (!response.ok) throw new Error(comment.error || "Không thể gửi bình luận");
+    const list = form.previousElementSibling;
+    list.insertAdjacentHTML("beforeend", `<div class="comment-item"><strong>${escapeHtml(comment.name)}</strong>${escapeHtml(comment.text)}</div>`);
+    form.reset();
+  } catch (error) {
+    showToast(error.message);
+  }
+});
+
 document.addEventListener("click", (event) => {
   const shareButton = event.target.closest(".share-album");
   if (shareButton) {
@@ -596,6 +733,12 @@ document.querySelector("#lightbox-next").addEventListener("click", () => {
 });
 lightbox.addEventListener("click", async (event) => {
   if (event.target === lightbox) closeLightbox();
+  const zoomTile = event.target.closest(".lightbox-tile");
+  if (zoomTile && (event.target.matches("img, video"))) {
+    const itemIndex = lightboxItems.findIndex((item) => item.id === zoomTile.dataset.memoryId);
+    openZoom(lightboxItems, itemIndex);
+    return;
+  }
   const remainingStack = event.target.closest("#remaining-stack");
   if (remainingStack) {
     lightboxContent.classList.add("is-swapping");
@@ -636,6 +779,16 @@ lightbox.addEventListener("click", async (event) => {
     showToast("Đã xóa kỷ niệm khỏi server");
   } catch (error) {
     showToast(error.message);
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (zoomOverlay.classList.contains("show")) {
+    if (event.key === "Escape") closeZoom();
+    if (event.key === "ArrowLeft") moveZoom(-1);
+    if (event.key === "ArrowRight") moveZoom(1);
+  } else if (lightbox.classList.contains("show")) {
+    if (event.key === "Escape") closeLightbox();
   }
 });
 

@@ -14,11 +14,14 @@ const DATA_DIR = path.join(ROOT, "data");
 const JOURNAL_DB = path.join(DATA_DIR, "journal.json");
 const AUTH_DB = path.join(DATA_DIR, "users.json");
 const ALBUM_DB = path.join(DATA_DIR, "albums.json");
+const INTERACTION_DB = path.join(DATA_DIR, "interactions.json");
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".webmanifest": "application/manifest+json",
+  ".svg": "image/svg+xml",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".png": "image/png",
@@ -37,6 +40,7 @@ const MIME_TYPES = {
 fs.mkdirSync(UPLOADS, { recursive: true });
 fs.mkdirSync(VIDEO_UPLOADS, { recursive: true });
 fs.mkdirSync(THUMBNAILS, { recursive: true });
+if (!fs.existsSync(INTERACTION_DB)) fs.writeFileSync(INTERACTION_DB, "{}");
 fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(JOURNAL_DB)) fs.writeFileSync(JOURNAL_DB, "[]");
 const sessions = new Map();
@@ -154,6 +158,11 @@ const readJournal = () => {
 };
 
 const writeJournal = (posts) => fs.writeFileSync(JOURNAL_DB, JSON.stringify(posts, null, 2));
+
+const readInteractions = () => {
+  try { return JSON.parse(fs.readFileSync(INTERACTION_DB, "utf8")); } catch { return {}; }
+};
+const writeInteractions = (interactions) => fs.writeFileSync(INTERACTION_DB, JSON.stringify(interactions, null, 2));
 
 const readJsonBody = (request) => new Promise((resolve, reject) => {
   const chunks = [];
@@ -404,6 +413,47 @@ const handleAlbumDelete = (request, response, pathname) => {
   return send(response, 200, JSON.stringify({ deleted }), "application/json");
 };
 
+const handleInteractions = async (request, response, pathname) => {
+  const match = pathname.match(/^\/api\/interactions\/(album|journal)\/([^/]+)(?:\/(comments|like))?$/);
+  if (!match) return send(response, 404, JSON.stringify({ error: "Không tìm thấy tương tác" }), "application/json");
+  const [, type, encodedId, action] = match;
+  const id = decodeURIComponent(encodedId);
+  const key = `${type}:${id}`;
+  const interactions = readInteractions();
+  const state = interactions[key] || { likes: 0, comments: [] };
+
+  if (request.method === "GET" && (!action || action === "comments")) {
+    return send(response, 200, JSON.stringify(state), "application/json");
+  }
+  if (request.method === "POST" && action === "like") {
+    try {
+      const body = await readJsonBody(request);
+      const liked = Boolean(body.liked);
+      state.likes = Math.max(0, state.likes + (liked ? 1 : -1));
+      interactions[key] = state;
+      writeInteractions(interactions);
+      return send(response, 200, JSON.stringify(state), "application/json");
+    } catch (error) {
+      return send(response, 400, JSON.stringify({ error: error.message }), "application/json");
+    }
+  }
+  if (request.method === "POST" && action === "comments") {
+    try {
+      const body = await readJsonBody(request);
+      const name = String(body.name || "Bạn bè").trim().slice(0, 40) || "Bạn bè";
+      const text = String(body.text || "").trim().slice(0, 500);
+      if (!text) return send(response, 400, JSON.stringify({ error: "Nội dung bình luận đang trống" }), "application/json");
+      state.comments.push({ id: crypto.randomUUID(), name, text, createdAt: new Date().toISOString() });
+      interactions[key] = state;
+      writeInteractions(interactions);
+      return send(response, 201, JSON.stringify(state.comments.at(-1)), "application/json");
+    } catch (error) {
+      return send(response, 400, JSON.stringify({ error: error.message }), "application/json");
+    }
+  }
+  return send(response, 405, "Method Not Allowed");
+};
+
 const handleSharedAlbum = (request, response, pathname) => {
   const token = decodeURIComponent(pathname.slice("/api/shared/".length));
   const album = readAlbums().find((candidate) => candidate.shareToken === token);
@@ -427,6 +477,9 @@ const server = http.createServer(async (request, response) => {
   }
   if (request.method === "GET" && requestUrl.pathname.startsWith("/api/shared/")) {
     return handleSharedAlbum(request, response, requestUrl.pathname);
+  }
+  if (requestUrl.pathname.startsWith("/api/interactions/")) {
+    return handleInteractions(request, response, requestUrl.pathname);
   }
   if (request.method === "POST" && requestUrl.pathname === "/api/albums") {
     const user = requireUser(request, response);

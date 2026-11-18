@@ -165,3 +165,52 @@ footer b { color: var(--coral); }
   .journal-dialog { padding: 28px 18px; }.journal-form-actions { align-items: stretch; flex-direction: column-reverse; }.journal-form-actions button { min-height: 44px; }
   .section-heading { align-items: start; flex-direction: column; gap: 20px; }.filter-menu { top: 115px; left: 0; right: auto; }
 }
+
+:root { transition: background-color .25s ease, color .25s ease; }
+html[data-theme="dark"] {
+  --ink: #f2eee6;
+  --muted: #aaa99f;
+  --paper: #171918;
+  --cream: #202321;
+  --line: #343936;
+  color-scheme: dark;
+}
+html[data-theme="dark"] body,
+html[data-theme="dark"] .page-shell,
+html[data-theme="dark"] .collection,
+html[data-theme="dark"] .journal { background: var(--paper); }
+html[data-theme="dark"] .topbar { border-color: var(--line); }
+html[data-theme="dark"] .memory-card,
+html[data-theme="dark"] .album-stack,
+html[data-theme="dark"] .preview-dialog,
+html[data-theme="dark"] .auth-dialog,
+html[data-theme="dark"] .journal-dialog { background: #242825; color: var(--ink); box-shadow: 0 12px 28px #0005; }
+html[data-theme="dark"] .journal-card { filter: brightness(.82) saturate(.85); }
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select { color: var(--ink); background: #303431; border-color: var(--line); }
+.theme-toggle { width: 44px; height: 44px; display: grid; flex: 0 0 44px; place-items: center; color: var(--ink); background: var(--cream); border: 1px solid var(--line); border-radius: 50%; font-size: 18px; }
+.topbar { gap: 14px; }.auth-area { margin-left: auto; }
+
+.zoom-overlay { position: fixed; z-index: 70; inset: 0; display: none; place-items: center; padding: 68px 70px 48px; background: #090a0be8; backdrop-filter: blur(18px); }
+.zoom-overlay.show { display: grid; }
+.zoom-stage { max-width: calc(100vw - 140px); max-height: calc(100vh - 116px); display: grid; place-items: center; }
+.zoom-stage img, .zoom-stage video { max-width: 100%; max-height: calc(100vh - 116px); width: auto; height: auto; object-fit: contain; border-radius: 8px; box-shadow: 0 25px 70px #0009; }
+.zoom-close, .zoom-arrow { position: absolute; z-index: 2; width: 44px; height: 44px; display: grid; place-items: center; color: #fff; background: #ffffff20; border: 1px solid #ffffff30; border-radius: 50%; font-size: 28px; }
+.zoom-close { top: 18px; right: 18px; }.zoom-prev { left: 18px; top: 50%; }.zoom-next { right: 18px; top: 50%; }
+.zoom-caption { position: absolute; bottom: 18px; left: 50%; max-width: min(80vw, 700px); padding: 8px 14px; transform: translateX(-50%); color: #fff; background: #0007; border-radius: 30px; font-size: 12px; text-align: center; }
+
+.interaction-bar { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.like-button { min-height: 36px; display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 30px; }
+.like-button.liked { color: #d94f62; border-color: #d94f62; }.like-button.bump { animation: like-bump .28s ease; }
+@keyframes like-bump { 50% { transform: scale(1.18); } }
+.comments-block { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.comment-list { max-height: 145px; overflow: auto; }.comment-item { margin: 8px 0; font-size: 12px; line-height: 1.45; }.comment-item strong { margin-right: 5px; }
+.comment-form { display: grid; grid-template-columns: 110px 1fr auto; gap: 7px; margin-top: 10px; }.comment-form input, .comment-form button { min-height: 38px; }
+.comment-form input { width: 100%; padding: 8px 9px; border: 1px solid var(--line); border-radius: 5px; }.comment-form button { padding: 7px 10px; color: #fff; background: var(--coral); border-radius: 5px; }
+
+@media (max-width: 760px) {
+  .topbar { gap: 8px; }.theme-toggle { width: 42px; height: 42px; flex-basis: 42px; }
+  .comment-form { grid-template-columns: 1fr; }.comment-form button { min-height: 44px; }
+  .zoom-overlay { padding: 62px 12px 54px; }.zoom-stage { max-width: calc(100vw - 24px); }.zoom-prev { left: 8px; }.zoom-next { right: 8px; }.zoom-caption { bottom: 10px; }
+}
