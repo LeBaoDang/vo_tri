@@ -257,14 +257,16 @@
     <div class="toast" id="toast" role="status"></div>
     <script>
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/sw.js").catch((error) => {
-            console.error("Không thể đăng ký Service Worker:", error);
-          });
-        });
+        navigator.serviceWorker.getRegistrations()
+          .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+          .catch(() => {});
+        if (window.caches) {
+          caches.keys()
+            .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+            .catch(() => {});
+        }
       }
     </script>
-    <script src="script.js?v=20261118-journalstoryfix"></script>
-    <script>(function(s){s.dataset.zone='12286534',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <script src="script.js?v=20261121-noads"></script>
   </body>
 </html>
